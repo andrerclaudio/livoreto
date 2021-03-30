@@ -11,6 +11,7 @@ from threading import Thread
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Project modules
+from system_digest import message_digest
 
 """ ----  Mode work options ------
 Development    = 'dev'
@@ -28,7 +29,7 @@ if WORK_MODE == 'prod':
                         datefmt='%d/%b/%Y - %H:%M:%S')
 else:
     # Print in software terminal
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s | %(process)d | %(name)s | %(thread)d | %(threadName)s | %(levelname)s: '
                                '%(message)s',
                         datefmt='%d/%b/%Y - %H:%M:%S')
@@ -131,10 +132,6 @@ class ProcessIncomingMessages(Thread):
                     finally:
                         # Show the message queue size
                         logger.info('[Message queue (-): {}]'.format(self.msg_queue.qsize()))
-
-
-def message_digest(update):
-    pass
 
 
 def signal_handler(sig, frame, _telegram):
