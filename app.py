@@ -1,7 +1,9 @@
 # Build-in modules
 import configparser
 import logging
-from multiprocessing import cpu_count as cpu
+import signal
+from multiprocessing import Process, cpu_count as cpu
+from multiprocessing import ProcessError
 from queue import Queue
 from threading import Thread
 
@@ -26,7 +28,7 @@ if WORK_MODE == 'prod':
                         datefmt='%d/%b/%Y - %H:%M:%S')
 else:
     # Print in software terminal
-    logging.basicConfig(level=logging.INFO,
+    logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s | %(process)d | %(name)s | %(thread)d | %(threadName)s | %(levelname)s: '
                                '%(message)s',
                         datefmt='%d/%b/%Y - %H:%M:%S')
@@ -70,20 +72,74 @@ class InitializeTelegram(object):
             pass
 
 
+class ChatIdQueue(object):
+    """Hold all Chat IDs that are being processed"""
+
+    def __init__(self):
+        self.chat_id = {}
+
+    def fetch_id(self, chat_id):
+        """Return if a Chat ID process is alive, if not, remove the Chat ID from the Dict"""
+        if chat_id in self.chat_id.keys():
+            p = self.chat_id[chat_id]
+            if p.is_alive():
+                return True
+            else:
+                del self.chat_id[chat_id]
+
+        return False
+
+    def add_id(self, chat_id, process):
+        """Hold a Chat ID and its Process number"""
+        self.chat_id[chat_id] = process
+
+
 class ProcessIncomingMessages(Thread):
     """Start processing all Telegram incoming messages"""
 
     def __init__(self, telegram_obj):
+        self.telegram_obj = telegram_obj
         self.msg_queue = telegram_obj.msg_queue
         Thread.__init__(self, name='Message dispatcher', args=())
         self.daemon = True
         self.start()
 
     def run(self):
-        """Process messages"""
-        while True:
-            self.msg_queue.get()
-            logger.info('[Message queue: {}]'.format(self.msg_queue.qsize()))
+
+        # Start ID queue in order to run just one task per Id
+        message_library = ChatIdQueue()
+
+        """Process messages while Telegram is running"""
+        while self.telegram_obj.updater.running:
+
+            if self.msg_queue.qsize() > 0:
+                update = self.msg_queue.get()
+                chat_id = update.message.chat_id
+                # Check if the Chat ID is already being processed
+                if message_library.fetch_id(chat_id):
+                    self.msg_queue.put(update)
+                else:
+                    try:
+                        p = Process(target=message_digest,
+                                    args=(update,),
+                                    name='Message digest')
+                        p.daemon = True
+                        p.start()
+                        message_library.add_id(chat_id, p)
+                    except ProcessError as e:
+                        logger.exception('{}'.format(e), exc_info=False)
+                    finally:
+                        # Show the message queue size
+                        logger.info('[Message queue (-): {}]'.format(self.msg_queue.qsize()))
+
+
+def message_digest(update):
+    pass
+
+
+def signal_handler(sig, frame, _telegram):
+    logger.info('Finishing the application')
+    _telegram.updater.stop()
 
 
 def application():
@@ -98,6 +154,10 @@ def application():
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
 
+    # Interruption handlers
+    signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, _telegram))
+    signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, _telegram))
+
 
 def telegram_message(update, msg_queue):
     """All received Telegram messages is queued here"""
@@ -106,7 +166,7 @@ def telegram_message(update, msg_queue):
 
         # Message Queue
         msg_queue.put(update)
-        logger.info('[Message queue: {}]'.format(int(msg_queue.qsize())))
+        logger.info('[Message queue (+): {}]'.format(int(msg_queue.qsize())))
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
