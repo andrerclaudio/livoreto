@@ -1,6 +1,5 @@
 # Build-in modules
 import logging
-import time
 from datetime import timedelta
 
 # Added modules
@@ -25,44 +24,64 @@ class ElapsedTime(object):
         logger.debug('< {} >'.format(d))
 
 
-def message_digest(update, pending_jobs):
+def message_digest(update):
     """Process message information"""
     # Connect to Mongo DB Database
-    database_client = MongoDBConnection()
+    mongo = MongoDBConnection()
     # Check if the connection is fine
-    if database_client.create_connection():
+    if mongo.create_connection():
         # Hold tables information
-        database = DatabaseCollections(database_client.client)
+        db = DatabaseCollections(mongo.client)
         # Calculate the elapsed time to process the incoming information
         elapsed = ElapsedTime()
         # Process incoming messages
         try:
             # Parse the incoming user credentials and open its database file
-            verify_user_credentials(update, database)
+            verify_user_credentials(update, db)
             # Call the message parser
-            incoming_msg_parser(update, database, pending_jobs)
+            # incoming_msg_parser(update, database, pending_jobs)
             # And then, close the database
-            database.disconnect_database()
+            db.disconnect()
 
             elapsed.elapsed()
         except Exception as e:
             logger.exception('{}'.format(e), exc_info=False)
 
 
+def verify_user_credentials(update, database):
+    """Register the incoming user credentials"""
+
+    chat_id = str(update.message.chat_id)
+
+    # Connect to Database
+    database.connect(chat_id)
+    # Fetch collections data
+    database.refresh()
+
+    # Register user access
+    user = register_user_access(update, database)
+    logger.info('Registered access to: {}'.format(user))
+
+
 def register_user_access(update, database):
     """Incoming data are registered and labeled to an user.
     For a know user, the access count is increased, otherwise, a new database file will
     be generate"""
-    df = database.get_value('tUSER')
+    df = database.get('tUSER')
 
     name = update.effective_user.full_name
-    last_access = int(time.time())
+    last_access = update.message.date
 
     if df is not None:
         # Update the user information
-        counter = df['ACCESS_COUNTER'][df.index[0]]
-        df.loc[0, 'LAST_ACCESS'] = last_access
-        df.loc[0, 'ACCESS_COUNTER'] = counter + 1
+        counter = df['ACCESS_COUNTER']
+        df = {'CHAT_ID': df['CHAT_ID'],
+              'NAME': df['NAME'],
+              'USERNAME': df['USERNAME'],
+              'LAST_ACCESS': last_access,
+              'ACCESS_COUNTER': int(counter + 1)
+              }
+        database.update_value('tUSER', df)
     else:
         df = {'CHAT_ID': update.message.chat_id,
               'NAME': name,
@@ -70,25 +89,6 @@ def register_user_access(update, database):
               'LAST_ACCESS': last_access,
               'ACCESS_COUNTER': int(1)
               }
-
-    database.add_information('tUSER', df)
+        database.new_collection('tUSER', df)
 
     return name
-
-
-def verify_user_credentials(update, database, scheduled=False):
-    """Register the incoming user credentials"""
-    if scheduled:
-        chat_id = update
-    else:
-        chat_id = str(update.message.chat_id)
-
-    # Connect to Database
-    database.connect_database(chat_id)
-    # Fetch tables information
-    database.refresh_database()
-
-    if not scheduled:
-        # Register user access
-        user = register_user_access(update, database)
-        logger.info('Registered access to: {}'.format(user))

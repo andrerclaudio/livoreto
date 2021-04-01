@@ -131,12 +131,7 @@ class ProcessIncomingMessages(Thread):
                         logger.exception('{}'.format(e), exc_info=False)
                     finally:
                         # Show the message queue size
-                        logger.info('[Message queue (-): {}]'.format(self.msg_queue.qsize()))
-
-
-def signal_handler(sig, frame, _telegram):
-    logger.info('Finishing the application')
-    _telegram.updater.stop()
+                        logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
 
 
 def application():
@@ -163,7 +158,7 @@ def telegram_message(update, msg_queue):
 
         # Message Queue
         msg_queue.put(update)
-        logger.info('[Message queue (+): {}]'.format(int(msg_queue.qsize())))
+        logger.info('[Message enqueue: {}]'.format(int(msg_queue.qsize())))
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
@@ -171,3 +166,8 @@ def telegram_message(update, msg_queue):
 def error(update, context):
     """Log Errors caused by Updates"""
     logger.error('Update "%s" caused error "%s"', update, context.error)
+
+
+def signal_handler(sig, frame, _telegram):
+    logger.info('Finishing the application')
+    _telegram.updater.stop()
