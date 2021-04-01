@@ -1,4 +1,5 @@
 # Build-in modules
+import configparser
 import logging
 
 # Added modules
@@ -18,13 +19,17 @@ class MongoDBConnection(object):
         self.host_ip = 'localhost'
         self.host_port = 27017
 
+        config = configparser.ConfigParser()
+        config.read_file(open('config.ini'))
+        self.connection_url = config['MONGODB']['url']
+
     def create_connection(self):
         """Establish database connection"""
         try:
-            self.client = MongoClient(self.host_ip, self.host_port, connect=False)
+            # self.client = MongoClient(self.host_ip, self.host_port, connect=False)
+            self.client = MongoClient(self.connection_url)
 
-            logger.debug('Connected to MongoDB [version: {}] IP: {} port: {}'
-                         .format(self.client.server_info()['version'], self.host_ip, self.host_port))
+            logger.debug('Connected to Remote MongoDB [version: {}]'.format(self.client.server_info()['version']))
         except Exception as e:
             logger.exception(e, exc_info=False)
         finally:
