@@ -16,8 +16,8 @@ class MongoDBConnection(object):
     def __init__(self):
         # Connection indexes to database file
         self.client = None
-        self.host_ip = 'localhost'
-        self.host_port = 27017
+        # self.host_ip = 'localhost'
+        # self.host_port = 27017
 
         config = configparser.ConfigParser()
         config.read_file(open('config.ini'))
@@ -52,7 +52,7 @@ class DatabaseCollections(object):
         try:
             values = self.db[collection_name]  # Create Collection Name
             values.insert_one(data)
-            logger.info('Created collection: {}'.format(collection_name))
+            logger.debug('Created collection: {}'.format(collection_name))
         except Exception as e:
             logger.exception(e)
 
@@ -63,7 +63,7 @@ class DatabaseCollections(object):
         try:
             collection = self.db[collection_name]
             collection.drop()
-            logger.info('Dropped collection: {}'.format(collection_name))
+            logger.debug('Dropped collection: {}'.format(collection_name))
         except Exception as e:
             logger.exception(e)
 

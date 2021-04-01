@@ -7,6 +7,7 @@ from pytictoc import TicToc
 
 # Project modules
 from Database.database import DatabaseCollections, MongoDBConnection
+from Parsers.parser_message import messages_parser
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ def message_digest(update):
             # Parse the incoming user credentials and open its database file
             verify_user_credentials(update, db)
             # Call the message parser
-            # incoming_msg_parser(update, database, pending_jobs)
+            messages_parser(update, db)
             # And then, close the database
             db.disconnect()
 
