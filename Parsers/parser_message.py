@@ -1,16 +1,16 @@
 # Build-in modules
 import logging
 
+from delivery import send_picture
+# Project modules
+# from Database.file import get_directory_path
+# from Machine_learning.turing import finish_prediction_polynomial, week_days_reading, clustering, global_mean
+from menus import add_keyboard, MAIN_MENU_KEYBOARD
+
 # Added modules
 # import matplotlib
 # import matplotlib.pyplot as plt
 # from matplotlib.dates import DateFormatter
-
-# Project modules
-# from Database.file import get_directory_path
-# from Machine_learning.turing import finish_prediction_polynomial, week_days_reading, clustering, global_mean
-# from menus import add_keyboard, MAIN_MENU_KEYBOARD, YOUR_INFO_KEYBOARDS
-# from messages import send_message, send_picture
 
 # matplotlib.use('Agg')
 
@@ -22,9 +22,27 @@ def messages_parser(update, database):
     Incoming message parser
     """
 
-#     # Commands
-#     menu_start = ['/start']
-#
+    # Commands
+    menu_start = ['/start']
+
+    msg = str(update.message.text)
+    msg = msg.lower()
+
+    # --------------------------------------------------------------------------------------------------------------
+    if msg in menu_start:
+        """
+        Show an welcome message.
+        """
+        send_picture(update, open('Pictures/welcome_pic.jpg', 'rb'))
+
+        msg = "Very welcome, dear reader!\n" \
+              "To begin, I need the barcode (ISBN code) picture from the book you are going to read.\n" \
+              'Enter with "Help" to read about more usage details'
+
+        # Start the main menu
+        add_keyboard(update, msg, MAIN_MENU_KEYBOARD)
+    # --------------------------------------------------------------------------------------------------------------
+
 #     # Main menu
 #     menu_status = ['status']
 #     menu_community = ['community']
@@ -39,7 +57,7 @@ def messages_parser(update, database):
 #
 #     # Return to main menu
 #     menu_return = ['initial menu']
-#
+
 #     msg = str(update.message.text)
 #     # Check if all book information were filled
 #     ret = verify_inconsistent_information(database)
