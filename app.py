@@ -74,7 +74,7 @@ class InitializeTelegram(object):
                                        url_path=telegram_token,
                                        webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token)
                                        )
-            self.updater.idle()
+            # self.updater.idle()
         else:
             # and then, start pulling for new messages
             self.updater.start_polling(drop_pending_updates=True)
@@ -119,9 +119,6 @@ class ProcessIncomingMessages(Thread):
         # Start ID queue in order to run just one task per Id
         message_library = ChatIdQueue()
 
-        # Initializing service
-        logger.debug('Initializing messages processor!')
-
         """Process messages while Telegram is running"""
         while self.telegram_obj.updater.running:
 
@@ -155,14 +152,15 @@ def application():
     # Initializing Telegram
     _telegram = InitializeTelegram()
 
-    logger.debug('\n\n\nAndre\n\n\n\n')
-
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
 
     # Interruption handlers
     signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, _telegram))
     signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, _telegram))
+
+    if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+        _telegram.updater.idle()
 
 
 def telegram_message(update, msg_queue):

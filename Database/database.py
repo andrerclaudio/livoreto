@@ -20,8 +20,6 @@ class MongoDBConnection(object):
     def __init__(self):
         # Connection indexes to database file
         self.client = None
-        # self.host_ip = 'localhost'
-        # self.host_port = 27017
 
         if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
             key = os.environ['MONGODB']
@@ -30,14 +28,11 @@ class MongoDBConnection(object):
             config.read_file(open('config.ini'))
             key = config['MONGODB']['url']
 
-        logger.debug('Established database keys!')
         self.connection_url = key
 
     def create_connection(self):
         """Establish database connection"""
         try:
-            # self.client = MongoClient(self.host_ip, self.host_port, connect=False)
-            logger.debug('Connecting to MongoDB server...')
             self.client = MongoClient(self.connection_url)
 
             logger.debug('Connected to Remote MongoDB [version: {}]'.format(self.client.server_info()['version']))
