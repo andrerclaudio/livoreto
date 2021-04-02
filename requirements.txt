@@ -3,3 +3,4 @@ pytictoc
 pymongo[srv]
 isbnlib
 requests
+xmltodict
