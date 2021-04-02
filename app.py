@@ -71,12 +71,12 @@ class InitializeTelegram(object):
             self.port = int(os.environ.get('PORT', '8443'))
             self.updater.start_webhook(listen="0.0.0.0", port=self.port, url_path=telegram_token)
             self.updater.bot.setWebhook("https://livoreto.herokuapp.com/" + telegram_token)
+            self.updater.idle()
         else:
             # and then, start pulling for new messages
             self.updater.start_polling(drop_pending_updates=True)
-
-        while not self.updater.running:
-            pass
+            while not self.updater.running:
+                pass
 
 
 class ChatIdQueue(object):
