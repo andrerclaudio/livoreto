@@ -36,6 +36,7 @@ class MongoDBConnection(object):
         """Establish database connection"""
         try:
             # self.client = MongoClient(self.host_ip, self.host_port, connect=False)
+            logger.debug('Connecting to MongoDB server...')
             self.client = MongoClient(self.connection_url)
 
             logger.debug('Connected to Remote MongoDB [version: {}]'.format(self.client.server_info()['version']))
