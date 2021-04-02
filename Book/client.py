@@ -16,6 +16,14 @@ from .review import GoodreadsReview
 from .session import GoodreadsSession
 from .user import GoodreadsUser
 
+""" ----  Mode work options ------
+Development and Cloud     = 'dev&cloud'
+Development and Raspberry = 'dev&rasp'
+Production and Cloud      = 'prod&cloud'
+Production and Raspberry  = 'prod&rasp'
+------------------------------ """
+WORK_MODE = 'prod&cloud'
+
 
 class GoodReadsInitializer(object):
     """
@@ -23,10 +31,14 @@ class GoodReadsInitializer(object):
     """
 
     def __init__(self):
-        config = configparser.ConfigParser()
-        config.read_file(open('config.ini'))
-        key = config['GOOD_READS_KEY']['key']
-        secret = config['GOOD_READS_SECRET']['secret']
+        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+            key = os.environ['GOOD_READS_KEY']
+            secret = os.environ['GOOD_READS_SECRET']
+        else:
+            config = configparser.ConfigParser()
+            config.read_file(open('config.ini'))
+            key = config['GOOD_READS_KEY']['key']
+            secret = config['GOOD_READS_SECRET']['secret']
 
         self.good_reads_key = key
         self.good_reads_secret = secret

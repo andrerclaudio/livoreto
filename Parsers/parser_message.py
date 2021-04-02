@@ -35,9 +35,8 @@ def messages_parser(update, database):
         """
         send_picture(update, open('Pictures/welcome_pic.jpg', 'rb'))
 
-        msg = "Very welcome, dear reader!\n" \
-              "To begin, I need the barcode (ISBN code) picture from the book you are going to read.\n" \
-              'Enter with "Help" to read about more usage details'
+        msg = 'Ola, amigo leitor!\n' \
+              'Clique em <i><b>"ADD nova leitura"</b></i> para que possamos comecar!\n'
 
         # Start the main menu
         add_keyboard(update, msg, MAIN_MENU_KEYBOARD)

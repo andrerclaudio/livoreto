@@ -1,6 +1,7 @@
 # Build-in modules
 import configparser
 import logging
+import os
 import signal
 from multiprocessing import Process, cpu_count as cpu
 from multiprocessing import ProcessError
@@ -11,15 +12,10 @@ from threading import Thread
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Project modules
+from Book.client import WORK_MODE
 from system_digest import message_digest
 
-""" ----  Mode work options ------
-Development    = 'dev'
-Production     = 'prod'
------------------------------- """
-WORK_MODE = 'dev'
-
-if WORK_MODE == 'prod':
+if WORK_MODE == 'prod&rasp' or WORK_MODE == 'prod&cloud':
     # Print in file
     logging.basicConfig(filename='logs.log',
                         filemode='w',
@@ -42,13 +38,18 @@ class InitializeTelegram(object):
 
     def __init__(self):
         # Configuring bot
-        config = configparser.ConfigParser()
-        config.read_file(open('config.ini'))
-        if WORK_MODE == 'dev':
-            telegram_token = config['DEV']['token']
+        if WORK_MODE == 'dev&cloud':
+            telegram_token = os.environ['DEV']
+        elif WORK_MODE == 'prod&cloud':
+            telegram_token = os.environ['DEFAULT']
         else:
-            # 'prod'
-            telegram_token = config['DEFAULT']['token']
+            config = configparser.ConfigParser()
+            config.read_file(open('config.ini'))
+            if WORK_MODE == 'dev&rasp':
+                telegram_token = config['DEV']['token']
+            else:
+                # 'prod&rasp'
+                telegram_token = config['DEFAULT']['token']
 
         # Telegram incoming messages Queue initializer
         self.msg_queue = Queue()
@@ -66,8 +67,13 @@ class InitializeTelegram(object):
         # log all errors
         dispatcher.add_error_handler(error)
 
-        # and then, start pulling for new messages
-        self.updater.start_polling(drop_pending_updates=True)
+        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+            self.port = int(os.environ.get('PORT', '8443'))
+            self.updater.start_webhook(listen="0.0.0.0", port=self.port, url_path=telegram_token)
+            self.updater.bot.setWebhook("https://livoreto.herokuapp.com/" + telegram_token)
+        else:
+            # and then, start pulling for new messages
+            self.updater.start_polling(drop_pending_updates=True)
 
         while not self.updater.running:
             pass

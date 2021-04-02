@@ -1,9 +1,13 @@
 # Build-in modules
 import configparser
 import logging
+import os
 
 # Added modules
 from pymongo import MongoClient
+
+# Project modules
+from Book.client import WORK_MODE
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +23,14 @@ class MongoDBConnection(object):
         # self.host_ip = 'localhost'
         # self.host_port = 27017
 
-        config = configparser.ConfigParser()
-        config.read_file(open('config.ini'))
-        self.connection_url = config['MONGODB']['url']
+        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+            key = os.environ['MONGODB']
+        else:
+            config = configparser.ConfigParser()
+            config.read_file(open('config.ini'))
+            key = config['MONGODB']['url']
+
+        self.connection_url = key
 
     def create_connection(self):
         """Establish database connection"""
