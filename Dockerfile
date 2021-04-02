@@ -34,9 +34,7 @@ COPY requirements.txt /tmp/
 
 RUN pip3 install --no-cache-dir --trusted-host pypi.python.org -r /tmp/requirements.txt
 
-RUN apt-get update && apt-get install -y --no-install-recommends --yes \
-    libzbar0 \
-    libgl1-mesa-glx
+RUN apt-get update && apt-get install -y --no-install-recommends --yes
 
 CMD ["python", "main.py"]
  
