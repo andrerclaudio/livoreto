@@ -2,3 +2,4 @@ python-telegram-bot
 pytictoc
 pymongo[srv]
 isbnlib
+requests
