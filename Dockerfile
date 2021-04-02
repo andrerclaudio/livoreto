@@ -27,8 +27,8 @@ ENV TZ=America/Sao_Paulo
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# WORKDIR /livoreto
-# ADD . /livoreto
+WORKDIR /livoreto
+ADD . /livoreto
 
 COPY requirements.txt /tmp/
 
