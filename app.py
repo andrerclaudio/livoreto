@@ -155,6 +155,8 @@ def application():
     # Initializing Telegram
     _telegram = InitializeTelegram()
 
+    logger.debug('\n\n\nAndre\n\n\n\n')
+
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
 
