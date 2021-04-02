@@ -163,7 +163,7 @@ def application():
 def telegram_message(update, msg_queue):
     """All received Telegram messages is queued here"""
     try:
-        logger.debug('{}'.format(update.message.chat_id))
+        logger.debug('Chat ID: {}'.format(update.message.chat_id))
 
         # Message Queue
         msg_queue.put(update)

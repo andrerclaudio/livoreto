@@ -30,6 +30,7 @@ class MongoDBConnection(object):
             config.read_file(open('config.ini'))
             key = config['MONGODB']['url']
 
+        logger.debug('Established database keys!')
         self.connection_url = key
 
     def create_connection(self):
