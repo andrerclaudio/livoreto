@@ -4,3 +4,4 @@ pymongo[srv]
 isbnlib
 requests
 xmltodict
+rauth
