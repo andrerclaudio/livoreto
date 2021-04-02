@@ -68,7 +68,7 @@ class InitializeTelegram(object):
         dispatcher.add_error_handler(error)
 
         if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', '8443'))
+            self.port = int(os.environ.get('PORT', '80'))
             self.updater.start_webhook(listen="0.0.0.0", port=self.port, url_path=telegram_token)
             self.updater.bot.setWebhook("https://livoreto.herokuapp.com/" + telegram_token)
             self.updater.idle()
