@@ -30,7 +30,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # WORKDIR /livoreto
 # ADD . /livoreto
 
-# COPY requirements.txt /tmp/
+COPY requirements.txt /tmp/
 
 RUN pip3 install --no-cache-dir --trusted-host pypi.python.org -r /tmp/requirements.txt
 
