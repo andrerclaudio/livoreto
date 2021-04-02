@@ -27,14 +27,15 @@ ENV TZ=America/Sao_Paulo
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /livoreto
-ADD . /livoreto
+# WORKDIR /livoreto
+# ADD . /livoreto
 
-COPY requirements.txt /tmp/
+# COPY requirements.txt /tmp/
 
 RUN pip3 install --no-cache-dir --trusted-host pypi.python.org -r /tmp/requirements.txt
 
-RUN apt-get update && apt-get install -y --no-install-recommends --yes
+RUN apt update && apt-get install -y --no-install-recommends --yes
+RUN apt upgrade -y
 
 CMD ["python", "main.py"]
  

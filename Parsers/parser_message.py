@@ -50,15 +50,15 @@ def messages_parser(update, database):
         send_message('Neste exemplo seria: <i><b>9788535933925</b></i>\n', update)
     # --------------------------------------------------------------------------------------------------------------
     else:
-        msg = [c for c in msg if c.isdigit()]
-        numbers = ''.join(msg)
-
-        # If the ISBN code is valid, fetch for its information on GoodReads
-        book_info = isbn_lookup(numbers)
+        # ISBN related functions
+        book_info = isbn_lookup(msg)
         # Check for a valid information
         if len(book_info) > 0:
             # Show book information
             book_descriptor(update, book_info)
+        else:
+            send_message('Não encontrei o livro.\n'
+                         'Por favor, confirme o código ISBN digitado e tente novamente!', update)
 
 #     # Main menu
 #     menu_status = ['status']

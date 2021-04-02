@@ -11,12 +11,17 @@ from delivery import send_message
 logger = logging.getLogger(__name__)
 
 
-def isbn_lookup(isbn):
+def isbn_lookup(isbnlike):
     """
     Fetch in Good Reads for a given ISBN code
     """
     book_info = {}
-    isbn = isbnlib.to_isbn13(isbn) if isbnlib.is_isbn10(isbn) else isbn
+
+    val = [c for c in isbnlike if c.isdigit()]
+    isbn = ''.join(val)
+
+    if isbnlib.is_isbn10(val):
+        isbn = isbnlib.to_isbn13(val)
 
     if isbnlib.is_isbn13(isbn):
         try:
@@ -36,6 +41,8 @@ def isbn_lookup(isbn):
             logger.exception('{}'.format(e), exc_info=False)
         finally:
             return book_info
+    else:
+        return book_info
 
 
 def book_descriptor(update, book_info):
