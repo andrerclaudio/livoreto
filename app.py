@@ -119,6 +119,9 @@ class ProcessIncomingMessages(Thread):
         # Start ID queue in order to run just one task per Id
         message_library = ChatIdQueue()
 
+        # Initializing service
+        logger.debug('Initializing messages processor!')
+
         """Process messages while Telegram is running"""
         while self.telegram_obj.updater.running:
 
