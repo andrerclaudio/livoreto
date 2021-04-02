@@ -2,7 +2,6 @@
 import configparser
 import logging
 import os
-import signal
 from multiprocessing import Process, cpu_count as cpu
 from multiprocessing import ProcessError
 from queue import Queue
@@ -156,11 +155,12 @@ def application():
     ProcessIncomingMessages(_telegram)
 
     # Interruption handlers
-    signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, _telegram))
-    signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, _telegram))
+    # signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, _telegram))
+    # signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, _telegram))
 
-    if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
-        _telegram.updater.idle()
+    # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
+    _telegram.updater.idle()
+    logger.info('Finishing the application')
 
 
 def telegram_message(update, msg_queue):

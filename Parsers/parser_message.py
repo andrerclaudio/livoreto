@@ -1,18 +1,13 @@
 # Build-in modules
 import logging
 
-from delivery import send_picture
 # Project modules
-# from Database.file import get_directory_path
-# from Machine_learning.turing import finish_prediction_polynomial, week_days_reading, clustering, global_mean
+from Parsers.new_book import isbn_lookup, book_descriptor
+from delivery import send_picture, send_message
 from menus import add_keyboard, MAIN_MENU_KEYBOARD
 
 # Added modules
-# import matplotlib
-# import matplotlib.pyplot as plt
-# from matplotlib.dates import DateFormatter
 
-# matplotlib.use('Agg')
 
 logger = logging.getLogger(__name__)
 
@@ -23,24 +18,47 @@ def messages_parser(update, database):
     """
 
     # Commands
-    menu_start = ['/start']
+    command_start = ['/start']
+    # Buttons
+    button_new_book = ['adicionar um novo livro']
 
     msg = str(update.message.text)
     msg = msg.lower()
 
     # --------------------------------------------------------------------------------------------------------------
-    if msg in menu_start:
+    if msg in command_start:
         """
         Show an welcome message.
         """
         send_picture(update, open('Pictures/welcome_pic.jpg', 'rb'))
 
-        msg = 'Ola, amigo leitor!\n' \
-              'Clique em <i><b>"ADD nova leitura"</b></i> para que possamos comecar!\n'
+        msg = 'Olá, amigo leitor!\n' \
+              'Clique em <i><b>"Adicionar um novo livro"</b></i> para que possamos começar!\n'
 
         # Start the main menu
         add_keyboard(update, msg, MAIN_MENU_KEYBOARD)
     # --------------------------------------------------------------------------------------------------------------
+    elif msg in button_new_book:
+        """
+        Tell the user about ISBN value.
+        """
+        send_message('Digite o código ISBN do livro que vai ler!\n'
+                     'Você deve encontrá-lo no final do livro.', update)
+
+        send_picture(update, open('Pictures/isbn.jpeg', 'rb'))
+
+        send_message('Neste exemplo seria: <i><b>9788535933925</b></i>\n', update)
+    # --------------------------------------------------------------------------------------------------------------
+    else:
+        msg = [c for c in msg if c.isdigit()]
+        numbers = ''.join(msg)
+
+        # If the ISBN code is valid, fetch for its information on GoodReads
+        book_info = isbn_lookup(numbers)
+        # Check for a valid information
+        if len(book_info) > 0:
+            # Show book information
+            book_descriptor(update, book_info)
 
 #     # Main menu
 #     menu_status = ['status']

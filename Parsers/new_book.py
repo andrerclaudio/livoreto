@@ -6,6 +6,7 @@ import isbnlib
 
 # Project modules
 from Book.client import good_reads_client as good_reads
+from delivery import send_message
 
 logger = logging.getLogger(__name__)
 
@@ -22,15 +23,13 @@ def isbn_lookup(isbn):
             book = good_reads.book(isbn=isbn)
 
             publisher = book.publisher if book.publisher is not None else '-'
-            cover = book.format if book.format is not None else '-'
-            language = str(book.language_code).capitalize() if book.language_code is not None else '-'
+            pages_qty = book.num_pages if book.num_pages is not None else '-'
 
-            book_info.update({'Title': book.title,
-                              'Author': str(book.authors[0]),
-                              'Publisher': publisher,
-                              'Cover': cover,
-                              'Language': language,
+            book_info.update({'Título': book.title,
+                              'Autor': str(book.authors[0]),
+                              'Editora': publisher,
                               'ISBN-13': isbn,
+                              'Qtd. de Páginas': pages_qty + '\n',
                               'Link': book.link
                               })
         except Exception as e:
@@ -38,13 +37,13 @@ def isbn_lookup(isbn):
         finally:
             return book_info
 
-# def show_book_info(update, book_info):
-#     """
-#     Show book info
-#     """
-#     msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
-#     send(''.join(msg), update)
 
+def book_descriptor(update, book_info):
+    """
+    Show book info
+    """
+    msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
+    send_message(''.join(msg), update)
 
 # def save_book_info(update, book_info, database):
 #     """

@@ -5,8 +5,8 @@ import telegram
 from delivery import send_message as send
 
 MAIN_MENU_KEYBOARD = [[telegram.KeyboardButton('Leituras em andamento')],
-                      [telegram.KeyboardButton('ADD novo livro'),
-                       telegram.KeyboardButton('Recomendacao')]]
+                      [telegram.KeyboardButton('Adicionar um novo livro'),
+                       telegram.KeyboardButton('Recomendacoes')]]
 
 
 def add_keyboard(update, msg, keyboard):
