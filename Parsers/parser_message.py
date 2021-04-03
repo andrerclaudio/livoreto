@@ -2,7 +2,7 @@
 import logging
 
 # Project modules
-from Parsers.new_book import isbn_lookup, book_descriptor
+from Parsers.new_book import isbn_lookup, book_descriptor, save_book
 from delivery import send_picture, send_message
 from menus import add_keyboard, MAIN_MENU_KEYBOARD
 
@@ -56,6 +56,8 @@ def messages_parser(update, database):
         if len(book_info) > 0:
             # Show book information
             book_descriptor(update, book_info)
+            # Save book info into the user Database
+            save_book(update, book_info, database)
         else:
             send_message('Não encontrei o livro.\n'
                          'Por favor, confirme o código ISBN digitado e tente novamente!', update)

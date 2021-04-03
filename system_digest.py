@@ -1,6 +1,7 @@
 # Build-in modules
 import logging
-from datetime import timedelta
+import time
+from datetime import timedelta, datetime, timezone
 
 # Added modules
 from pytictoc import TicToc
@@ -70,26 +71,33 @@ def register_user_access(update, database):
     be generate"""
     df = database.get('tUSER')
 
-    name = update.effective_user.full_name
-    last_access = update.message.date
+    last_access = int(time.time())
+    tzinfo = str(datetime.now(timezone.utc).astimezone().tzinfo)
 
     if df is not None:
+        df = df[0]
         # Update the user information
+        obj_id = df['_id']
         counter = df['ACCESS_COUNTER']
-        df = {'CHAT_ID': df['CHAT_ID'],
+        df = {'_id': obj_id,
+              'CHAT_ID': df['CHAT_ID'],
               'NAME': df['NAME'],
               'USERNAME': df['USERNAME'],
               'LAST_ACCESS': last_access,
+              'TZINFO': tzinfo,
               'ACCESS_COUNTER': int(counter + 1)
               }
-        database.update_value('tUSER', df)
+        database.update_document('tUSER', df)
+        name = df['NAME']
     else:
+        name = update.effective_user.full_name
         df = {'CHAT_ID': update.message.chat_id,
               'NAME': name,
               'USERNAME': update.effective_user.username,
               'LAST_ACCESS': last_access,
+              'TZINFO': tzinfo,
               'ACCESS_COUNTER': int(1)
               }
-        database.new_collection('tUSER', df)
+        database.save_data('tUSER', df)
 
     return name

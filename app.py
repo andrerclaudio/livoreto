@@ -154,10 +154,6 @@ def application():
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
 
-    # Interruption handlers
-    # signal.signal(signal.SIGINT, lambda sig, frame: signal_handler(sig, frame, _telegram))
-    # signal.signal(signal.SIGTERM, lambda sig, frame: signal_handler(sig, frame, _telegram))
-
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
     logger.info('Finishing the application')
@@ -178,8 +174,3 @@ def telegram_message(update, msg_queue):
 def error(update, context):
     """Log Errors caused by Updates"""
     logger.error('Update "%s" caused error "%s"', update, context.error)
-
-
-def signal_handler(sig, frame, _telegram):
-    logger.info('Finishing the application')
-    _telegram.updater.stop()

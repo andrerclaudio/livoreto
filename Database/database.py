@@ -51,17 +51,6 @@ class DatabaseCollections(object):
         self.db_collections = {}
         self.client = database_client
 
-    def _create_collection(self, collection_name, data):
-        """
-        Create a new Collection
-        """
-        try:
-            values = self.db[collection_name]  # Create Collection Name
-            values.insert_one(data)
-            logger.debug('Created collection: {}'.format(collection_name))
-        except Exception as e:
-            logger.exception(e)
-
     def _drop_collection(self, collection_name):
         """
         Drop a specific collection
@@ -96,6 +85,7 @@ class DatabaseCollections(object):
                 logger.exception(e)
 
     def get(self, key):
+        self.refresh()
         return self.db_collections.get(key)
 
     def refresh(self):
@@ -106,22 +96,28 @@ class DatabaseCollections(object):
 
         for name in collections_names:
             collection = self.db[name]
-            cursor = collection.find_one()
-            self.db_collections['{}'.format(name)] = cursor
+            cursor = collection.find()
+            documents = [docs for docs in cursor]
+            self.db_collections['{}'.format(name)] = documents
 
-    def new_collection(self, collection_name, data):
+    def save_data(self, collection_name, data):
         """
-        Create a new collection
+        Save data to a given Collection
         """
         # Check if there is a valid information to store
         if len(data) > 0:
-            self._create_collection(collection_name, data)
+            try:
+                values = self.db[collection_name]  # Create Collection Name
+                values.insert_one(data)
+                logger.debug('Created collection: {}'.format(collection_name))
+            except Exception as e:
+                logger.exception(e)
 
-    def update_value(self, collection_name, data):
+    def update_document(self, collection_name, data):
         """
         Drop a given collection and create it again with new values
         """
         # Check if there is a valid information to store
         if len(data) > 0:
-            self._drop_collection(collection_name)
-            self._create_collection(collection_name, data)
+            col = self.db[collection_name]
+            col.save(data)
