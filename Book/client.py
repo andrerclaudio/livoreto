@@ -22,7 +22,7 @@ Development and Raspberry = 'dev&rasp'
 Production and Cloud      = 'prod&cloud'
 Production and Raspberry  = 'prod&rasp'
 ------------------------------ """
-WORK_MODE = 'dev&rasp'
+WORK_MODE = 'dev&cloud'
 
 
 class GoodReadsInitializer(object):
