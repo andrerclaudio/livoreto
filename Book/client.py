@@ -4,6 +4,7 @@ import configparser
 import os
 import webbrowser
 
+from settings import settings
 # Project modules
 from .author import GoodreadsAuthor
 from .book import GoodreadsBook
@@ -16,14 +17,6 @@ from .review import GoodreadsReview
 from .session import GoodreadsSession
 from .user import GoodreadsUser
 
-""" ----  Mode work options ------
-Development and Cloud     = 'dev&cloud'
-Development and Raspberry = 'dev&rasp'
-Production and Cloud      = 'prod&cloud'
-Production and Raspberry  = 'prod&rasp'
------------------------------- """
-WORK_MODE = 'dev&cloud'
-
 
 class GoodReadsInitializer(object):
     """
@@ -31,7 +24,7 @@ class GoodReadsInitializer(object):
     """
 
     def __init__(self):
-        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             key = os.environ['GOOD_READS_KEY']
             secret = os.environ['GOOD_READS_SECRET']
         else:

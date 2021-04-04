@@ -2,6 +2,7 @@
 import configparser
 import logging
 import os
+import time
 from multiprocessing import Process, cpu_count as cpu
 from multiprocessing import ProcessError
 from queue import Queue
@@ -11,10 +12,11 @@ from threading import Thread
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Project modules
-from Book.client import WORK_MODE
+from Machine_learning.recommender_system import recommendation_tree
+from settings import settings
 from system_digest import message_digest
 
-if WORK_MODE == 'prod&rasp' or WORK_MODE == 'prod&cloud':
+if settings.WORK_MODE == 'prod&rasp' or settings.WORK_MODE == 'prod&cloud':
     # Print in file
     logging.basicConfig(filename='logs.log',
                         filemode='w',
@@ -37,14 +39,14 @@ class InitializeTelegram(object):
 
     def __init__(self):
         # Configuring bot
-        if WORK_MODE == 'dev&cloud':
+        if settings.WORK_MODE == 'dev&cloud':
             telegram_token = os.environ['DEV']
-        elif WORK_MODE == 'prod&cloud':
+        elif settings.WORK_MODE == 'prod&cloud':
             telegram_token = os.environ['DEFAULT']
         else:
             config = configparser.ConfigParser()
             config.read_file(open('config.ini'))
-            if WORK_MODE == 'dev&rasp':
+            if settings.WORK_MODE == 'dev&rasp':
                 telegram_token = config['DEV']['token']
             else:
                 # 'prod&rasp'
@@ -66,7 +68,7 @@ class InitializeTelegram(object):
         # log all errors
         dispatcher.add_error_handler(error)
 
-        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             self.port = int(os.environ.get('PORT', '80'))
             self.updater.start_webhook(listen="0.0.0.0",
                                        port=self.port,
@@ -140,6 +142,27 @@ class ProcessIncomingMessages(Thread):
                     finally:
                         # Show the message queue size
                         logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
+
+            """Periodically calls for recommendation machine"""
+            if (time.time() - settings.last_recommendation_run >= settings.DELTA and settings.running_recommender) or \
+                    settings.run_at_initialization:
+                logger.info('Check-in on recommendation system!')
+                settings.run_at_initialization = False
+                try:
+                    settings.running_recommender = False
+                    p = Process(target=recommendation_tree,
+                                name='Recommender system')
+                    p.daemon = True
+                    p.start()
+                except ProcessError as e:
+                    logger.exception('{}'.format(e), exc_info=False)
+                finally:
+                    # Signalize a new running can happen
+                    settings.running_recommender = True
+                    # Register when the task have finished
+                    settings.last_recommendation_run = time.time()
+                    # Show the message queue size
+                    logger.info('Finished recommender system')
 
 
 def application():

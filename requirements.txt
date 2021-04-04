@@ -5,3 +5,5 @@ isbnlib
 requests
 xmltodict
 rauth
+pandas
+scikit-learn

@@ -9,6 +9,14 @@ MAIN_MENU_KEYBOARD = [[telegram.KeyboardButton('Leituras em andamento')],
                        telegram.KeyboardButton('Recomendacoes')]]
 
 
+def mount_keyboard(fields):
+    """
+
+    """
+    return [[telegram.KeyboardButton(field) for field in fields],
+            [telegram.KeyboardButton('Voltar')]]
+
+
 def add_keyboard(update, msg, keyboard):
     """
     Add a new keyboard

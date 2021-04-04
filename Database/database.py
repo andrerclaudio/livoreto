@@ -7,7 +7,7 @@ import os
 from pymongo import MongoClient
 
 # Project modules
-from Book.client import WORK_MODE
+from settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class MongoDBConnection(object):
         # Connection indexes to database file
         self.client = None
 
-        if WORK_MODE == 'dev&cloud' or WORK_MODE == 'prod&cloud':
+        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             key = os.environ['MONGODB']
         else:
             config = configparser.ConfigParser()
