@@ -119,7 +119,7 @@ class ProcessIncomingMessages(Thread):
 
         # Start ID queue in order to run just one task per Id
         message_library = ChatIdQueue()
-
+        logger.info('[START] Incoming Telegram messages!')
         """Process messages while Telegram is running"""
         while self.telegram_obj.updater.running:
 
@@ -143,10 +143,22 @@ class ProcessIncomingMessages(Thread):
                         # Show the message queue size
                         logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
 
+
+class ProcessRecommendationSystem(Thread):
+    """Process the recommendation system"""
+
+    def __init__(self):
+        Thread.__init__(self, name='Recommendation system', args=())
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        logger.info('[START] Recommendation system!')
+        while True:
             """Periodically calls for recommendation machine"""
             if (time.time() - settings.last_recommendation_run >= settings.DELTA and settings.running_recommender) or \
                     settings.run_at_initialization:
-                logger.info('Check-in on recommendation system!')
+
                 settings.run_at_initialization = False
                 try:
                     settings.running_recommender = False
@@ -154,6 +166,7 @@ class ProcessIncomingMessages(Thread):
                                 name='Recommender system')
                     p.daemon = True
                     p.start()
+                    p.join()
                 except ProcessError as e:
                     logger.exception('{}'.format(e), exc_info=False)
                 finally:
@@ -161,8 +174,6 @@ class ProcessIncomingMessages(Thread):
                     settings.running_recommender = True
                     # Register when the task have finished
                     settings.last_recommendation_run = time.time()
-                    # Show the message queue size
-                    logger.info('Finished recommender system')
 
 
 def application():
@@ -176,6 +187,9 @@ def application():
 
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
+
+    # Start processing recommendation system
+    ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()

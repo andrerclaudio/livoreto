@@ -77,8 +77,8 @@ class DatabaseCollections(object):
             try:
                 if server_close:
                     self.client.close()
+                    self.connection_flag = False
                 self.db = None
-                self.connection_flag = False
                 self.db_collections.clear()
                 logger.debug('The database connection was finished!')
             except Exception as e:

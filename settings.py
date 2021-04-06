@@ -19,7 +19,7 @@ class FunctionalSystemSettings(object):
         """
         
         """
-        self.MINUTES = 5
+        self.MINUTES = 30
         self.run_at_initialization = True
         self.running_recommender = True
         self.last_recommendation_run = time.time()
