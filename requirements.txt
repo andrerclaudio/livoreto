@@ -8,3 +8,4 @@ rauth
 pandas
 scikit-learn
 Flask
+gunicorn
