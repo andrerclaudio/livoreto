@@ -14,7 +14,7 @@ class FunctionalSystemSettings(object):
         Production and Cloud      = 'prod&cloud'
         Production and Raspberry  = 'prod&rasp'
         ------------------------------ """
-        self.WORK_MODE = 'dev&rasp'
+        self.WORK_MODE = 'dev&cloud'
         # --------------------------------------------------------------------------------
         """
         
