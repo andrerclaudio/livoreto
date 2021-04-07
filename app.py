@@ -151,12 +151,12 @@ class WebRequestResponse(Thread):
     """Run a webpage"""
 
     def __init__(self):
-        Thread.__init__(self, name='Recommendation system', args=())
+        Thread.__init__(self, name='Web', args=())
         self.daemon = True
         self.start()
 
     def run(self):
-        app.run()
+        app.run(threaded=True, port=5000)
 
 
 class ProcessRecommendationSystem(Thread):
@@ -231,6 +231,6 @@ def error(update, context):
     logger.error('Update "%s" caused error "%s"', update, context.error)
 
 
-@app.route("/")
-def hello():
-    return 'Hello World!'
+@app.route('/')
+def index():
+    return 'Ping page'
