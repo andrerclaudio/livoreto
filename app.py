@@ -151,12 +151,16 @@ class WebRequestResponse(Thread):
     """Run a webpage"""
 
     def __init__(self):
+        self.port = 5000
         Thread.__init__(self, name='Web', args=())
         self.daemon = True
         self.start()
 
     def run(self):
-        app.run(threaded=True, host='0.0.0.0', port=5000)
+        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
+            self.port = int(os.environ.get('PORT', 5000))
+
+        app.run(threaded=True, host='0.0.0.0', port=self.port)
 
 
 class ProcessRecommendationSystem(Thread):
