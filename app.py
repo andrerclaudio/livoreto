@@ -160,7 +160,7 @@ class WebRequestResponse(Thread):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             self.port = int(os.environ.get('PORT', 5000))
 
-        app.run(threaded=True, host='0.0.0.0', port=self.port)
+        app.run(threaded=True, port=self.port)
 
 
 class ProcessRecommendationSystem(Thread):
