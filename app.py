@@ -8,6 +8,7 @@ from multiprocessing import ProcessError
 from queue import Queue
 from threading import Thread
 
+from flask import Flask
 # Added modules
 from telegram.ext import Updater, MessageHandler, Filters
 
@@ -32,6 +33,8 @@ else:
                         datefmt='%d/%b/%Y - %H:%M:%S')
 
 logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
 
 
 class InitializeTelegram(object):
@@ -144,6 +147,18 @@ class ProcessIncomingMessages(Thread):
                         logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
 
 
+class WebRequestResponse(Thread):
+    """Run a webpage"""
+
+    def __init__(self):
+        Thread.__init__(self, name='Recommendation system', args=())
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        app.run()
+
+
 class ProcessRecommendationSystem(Thread):
     """Process the recommendation system"""
 
@@ -182,6 +197,9 @@ def application():
     # Count available CPU Cores
     logger.debug("Number of cpu: %s", cpu())
 
+    # Initialize Webpage
+    WebRequestResponse()
+
     # Initializing Telegram
     _telegram = InitializeTelegram()
 
@@ -211,3 +229,8 @@ def telegram_message(update, msg_queue):
 def error(update, context):
     """Log Errors caused by Updates"""
     logger.error('Update "%s" caused error "%s"', update, context.error)
+
+
+@app.route("/")
+def hello():
+    return 'Hello World!'

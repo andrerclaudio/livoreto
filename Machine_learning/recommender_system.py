@@ -85,86 +85,91 @@ def recommendation_tree():
         # Hold tables information
         db = DatabaseCollections(mongo.client)
 
-        for db_name in mongo.client.database_names():
+        for db_name in mongo.client.list_database_names():
 
-            # Connect to Database
-            db.connect(db_name)
-            # Fetch collections data
-            db.refresh()
-            # Fetch of reading books
-            df = db.get('tREADING')
+            if (db_name != 'admin') and (db_name != 'local'):
 
-            if df is not None:
-                # Books to be parsed
-                isbn_list = [values['ISBN'] for values in df]
+                logger.info('DB Id: {}'.format(db_name))
 
-                if len(isbn_list) > 0:
+                # Connect to Database
+                db.connect(db_name)
+                # Fetch collections data
+                db.refresh()
+                # Fetch of reading books
+                df = db.get('tREADING')
 
-                    # Fetch all related books ISBN codes information
-                    information, similarity = set_information(isbn_list)
-                    # Add all info into a Pandas Dataframe
-                    books_dataframe = create_dataframe(information)
+                if df is not None:
+                    # Books to be parsed
+                    isbn_list = [values['ISBN'] for values in df]
 
-                    # Find the other books from the same authors
-                    authors = books_dataframe['AUTHOR'].tolist()
-                    others = []
-                    for name in authors:
-                        ret = good_reads.find_author(name)
-                        if ret:
-                            for books in ret.books:
-                                if type(books.isbn13) is str:
-                                    others.append(books.isbn13)
+                    if len(isbn_list) > 0:
 
-                    # Add these books to similar
-                    similarity.extend(others)
+                        # Fetch all related books ISBN codes information
+                        information, similarity = set_information(isbn_list)
+                        # Add all info into a Pandas Dataframe
+                        books_dataframe = create_dataframe(information)
 
-                    # 1° turn of fetching similar books
-                    information, similarity = set_information(similarity)
-                    # Add all info into a Pandas Dataframe
-                    similarity_dataframe = create_dataframe(information)
+                        # Find the other books from the same authors
+                        authors = books_dataframe['AUTHOR'].tolist()
+                        others = []
+                        for name in authors:
+                            ret = good_reads.find_author(name)
+                            if ret:
+                                for books in ret.books:
+                                    if type(books.isbn13) is str:
+                                        others.append(books.isbn13)
 
-                    # 2° turn of fetching similar books
-                    information, similarity = set_information(similarity)
-                    # Add all info into a Pandas Dataframe
-                    similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe],
-                                                     ignore_index=True)
+                        # Add these books to similar
+                        similarity.extend(others)
 
-                    # 3° turn of fetching similar books
-                    # information, similarity = set_information(similarity)
-                    # Add all info into a Pandas Dataframe
-                    # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
+                        # 1° turn of fetching similar books
+                        information, similarity = set_information(similarity)
+                        # Add all info into a Pandas Dataframe
+                        similarity_dataframe = create_dataframe(information)
 
-                    # 4° turn of fetching similar books
-                    # information, similarity = set_information(similarity)
-                    # Add all info into a Pandas Dataframe
-                    # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
+                        # 2° turn of fetching similar books
+                        information, similarity = set_information(similarity)
+                        # Add all info into a Pandas Dataframe
+                        similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe],
+                                                         ignore_index=True)
 
-                    # Remove duplicate values from Pandas Dataframe
-                    similarity_dataframe.drop_duplicates(subset='ISBN', keep='first', inplace=True)
+                        # 3° turn of fetching similar books
+                        # information, similarity = set_information(similarity)
+                        # Add all info into a Pandas Dataframe
+                        # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
 
-                    numerical_books_dataframe = pd.DataFrame()
-                    numerical_similarity_dataframe = pd.DataFrame()
-                    numerical_books_dataframe = converter.transpose_data(books_dataframe)
-                    numerical_similarity_dataframe = converter.transpose_data(similarity_dataframe)
+                        # 4° turn of fetching similar books
+                        # information, similarity = set_information(similarity)
+                        # Add all info into a Pandas Dataframe
+                        # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
 
-                    # Run prediction
-                    y_pred = list(set(run_prediction(numerical_similarity_dataframe, numerical_books_dataframe)))
+                        # Remove duplicate values from Pandas Dataframe
+                        similarity_dataframe.drop_duplicates(subset='ISBN', keep='first', inplace=True)
 
-                    for codes in y_pred:
-                        i = numerical_similarity_dataframe[(numerical_similarity_dataframe['ISBN'] == codes)].index
-                        numerical_similarity_dataframe.drop(i, inplace=True)
+                        numerical_books_dataframe = pd.DataFrame()
+                        numerical_similarity_dataframe = pd.DataFrame()
+                        numerical_books_dataframe = converter.transpose_data(books_dataframe)
+                        numerical_similarity_dataframe = converter.transpose_data(similarity_dataframe)
 
-                    # Run prediction
-                    y_pred.extend(list(set(run_prediction(numerical_similarity_dataframe, numerical_books_dataframe))))
+                        # Run prediction
+                        y_pred = list(set(run_prediction(numerical_similarity_dataframe, numerical_books_dataframe)))
 
-                    # Show predicted books
-                    ret, _ = set_information(y_pred)
-                    predicted_books = create_dataframe(ret)
+                        for codes in y_pred:
+                            i = numerical_similarity_dataframe[(numerical_similarity_dataframe['ISBN'] == codes)].index
+                            numerical_similarity_dataframe.drop(i, inplace=True)
 
-                    print(predicted_books['TITLE'])
+                        # Run prediction
+                        y_pred.extend(
+                            list(set(run_prediction(numerical_similarity_dataframe, numerical_books_dataframe))))
 
-            # And then, close only the database
-            db.disconnect(server_close=False)
+                        # Show predicted books
+                        ret, _ = set_information(y_pred)
+                        predicted_books = create_dataframe(ret)
+
+                        print(predicted_books['TITLE'])
+
+                # And then, close only the database
+                db.disconnect(server_close=False)
 
     # Disconnect the client
     mongo.client.close()
