@@ -8,8 +8,8 @@ from multiprocessing import ProcessError
 from queue import Queue
 from threading import Thread
 
-from flask import Flask
 # Added modules
+from flask import Flask
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Project modules
@@ -17,7 +17,7 @@ from Machine_learning.recommender_system import recommendation_tree
 from settings import settings
 from system_digest import message_digest
 
-if settings.WORK_MODE == 'prod&rasp' or settings.WORK_MODE == 'prod&cloud':
+if settings.WORK_MODE == 'prod&rasp':
     # Print in file
     logging.basicConfig(filename='logs.log',
                         filemode='w',
@@ -28,7 +28,7 @@ if settings.WORK_MODE == 'prod&rasp' or settings.WORK_MODE == 'prod&cloud':
 else:
     # Print in software terminal
     logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s | %(process)d | %(name)s | %(thread)d | %(threadName)s | %(levelname)s: '
+                        format='%(asctime)s | %(process)d | %(threadName)s | %(levelname)s: '
                                '%(message)s',
                         datefmt='%d/%b/%Y - %H:%M:%S')
 
@@ -233,7 +233,7 @@ def application():
     ProcessIncomingMessages(_telegram)
 
     # Start processing recommendation system
-    # ProcessRecommendationSystem()
+    ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()

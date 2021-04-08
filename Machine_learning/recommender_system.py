@@ -20,7 +20,7 @@ NUMBER_MAX_THREADS = 64
 # Create a Dataframe book information
 COLUMNS_NAMES = ['GID', 'ISBN', 'TITLE', 'AVERAGE_RATING', 'RATINGS_COUNT', 'AUTHOR', 'PUBLISHER']
 INITIAL_POPULAR_SHELF_INDEX = COLUMNS_NAMES.index('PUBLISHER') + 1
-QTY_POPULAR_SHELF = 100
+QTY_POPULAR_SHELF = 8
 OTHERS_COLUMNS = [str(i) for i in range(QTY_POPULAR_SHELF)]
 COLUMNS_NAMES.extend(OTHERS_COLUMNS)
 QTY_OF_ROWS = len(COLUMNS_NAMES)
@@ -134,14 +134,10 @@ def recommendation_tree():
                                                          ignore_index=True)
 
                         # 3° turn of fetching similar books
-                        # information, similarity = set_information(similarity)
+                        information, similarity = set_information(similarity)
                         # Add all info into a Pandas Dataframe
-                        # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
-
-                        # 4° turn of fetching similar books
-                        # information, similarity = set_information(similarity)
-                        # Add all info into a Pandas Dataframe
-                        # similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe], ignore_index=True)
+                        similarity_dataframe = pd.concat([create_dataframe(information), similarity_dataframe],
+                                                         ignore_index=True)
 
                         # Remove duplicate values from Pandas Dataframe
                         similarity_dataframe.drop_duplicates(subset='ISBN', keep='first', inplace=True)
