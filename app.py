@@ -158,7 +158,7 @@ class WebRequestResponse(Thread):
 
     def run(self):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', 5000))
+            self.port = int(os.environ.get('PORT', 33507))
 
         app.run(threaded=True, port=self.port)
 
