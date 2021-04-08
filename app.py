@@ -72,7 +72,7 @@ class InitializeTelegram(object):
         dispatcher.add_error_handler(error)
 
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', '8443'))
+            self.port = int(os.environ.get('PORT', '80'))
             self.updater.start_webhook(listen="0.0.0.0",
                                        port=self.port,
                                        url_path=telegram_token,
@@ -224,17 +224,17 @@ def application():
     logger.debug("Number of cpu: %s", cpu())
 
     # Initialize Webpage
-    WebRequestResponse()
+    # WebRequestResponse()
 
     # Initializing Telegram
-    # _telegram = InitializeTelegram()
+    _telegram = InitializeTelegram()
 
     # Start processing all Telegram messages
-    # ProcessIncomingMessages(_telegram)
+    ProcessIncomingMessages(_telegram)
 
     # Start processing recommendation system
     # ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
-    # _telegram.updater.idle()
+    _telegram.updater.idle()
     logger.info('Finishing the application')
