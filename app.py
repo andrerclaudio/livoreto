@@ -72,7 +72,7 @@ class InitializeTelegram(object):
         dispatcher.add_error_handler(error)
 
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', '80'))
+            self.port = int(os.environ.get('PORT', '8443'))
             self.updater.start_webhook(listen="0.0.0.0",
                                        port=self.port,
                                        url_path=telegram_token,
@@ -158,9 +158,9 @@ class WebRequestResponse(Thread):
 
     def run(self):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', 33507))
+            self.port = int(os.environ.get('PORT', 5000))
 
-        app.run(threaded=True, port=33507)
+        app.run(threaded=True, port=self.port)
 
 
 class ProcessRecommendationSystem(Thread):
