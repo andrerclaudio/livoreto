@@ -74,7 +74,7 @@ class InitializeTelegram(object):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             self.port = int(os.environ.get('PORT', '8443'))
             self.updater.start_webhook(listen="0.0.0.0",
-                                       port=8443,
+                                       port=88,
                                        url_path=telegram_token,
                                        webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token)
                                        )
@@ -195,29 +195,6 @@ class ProcessRecommendationSystem(Thread):
                     settings.last_recommendation_run = time.time()
 
 
-def application():
-    """All application has its initialization from here"""
-    logger.info('Main application is running!')
-    # Count available CPU Cores
-    logger.debug("Number of cpu: %s", cpu())
-
-    # Initialize Webpage
-    WebRequestResponse()
-
-    # Initializing Telegram
-    _telegram = InitializeTelegram()
-
-    # Start processing all Telegram messages
-    ProcessIncomingMessages(_telegram)
-
-    # Start processing recommendation system
-    ProcessRecommendationSystem()
-
-    # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
-    _telegram.updater.idle()
-    logger.info('Finishing the application')
-
-
 def telegram_message(update, msg_queue):
     """All received Telegram messages is queued here"""
     try:
@@ -238,3 +215,26 @@ def error(update, context):
 @app.route('/')
 def index():
     return 'Ping page'
+
+
+def application():
+    """All application has its initialization from here"""
+    logger.info('Main application is running!')
+    # Count available CPU Cores
+    logger.debug("Number of cpu: %s", cpu())
+
+    # Initialize Webpage
+    WebRequestResponse()
+
+    # Initializing Telegram
+    _telegram = InitializeTelegram()
+
+    # Start processing all Telegram messages
+    ProcessIncomingMessages(_telegram)
+
+    # Start processing recommendation system
+    # ProcessRecommendationSystem()
+
+    # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
+    _telegram.updater.idle()
+    logger.info('Finishing the application')
