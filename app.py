@@ -74,7 +74,7 @@ class InitializeTelegram(object):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             self.port = int(os.environ.get('PORT', '8443'))
             self.updater.start_webhook(listen="0.0.0.0",
-                                       port=443,
+                                       port=self.port,
                                        url_path=telegram_token,
                                        webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token)
                                        )
@@ -160,7 +160,7 @@ class WebRequestResponse(Thread):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             self.port = int(os.environ.get('PORT', 5000))
 
-        app.run(threaded=True, port=5000)
+        app.run(threaded=True, port=self.port)
 
 
 class ProcessRecommendationSystem(Thread):
@@ -227,14 +227,14 @@ def application():
     WebRequestResponse()
 
     # Initializing Telegram
-    _telegram = InitializeTelegram()
+    # _telegram = InitializeTelegram()
 
     # Start processing all Telegram messages
-    ProcessIncomingMessages(_telegram)
+    # ProcessIncomingMessages(_telegram)
 
     # Start processing recommendation system
     # ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
-    _telegram.updater.idle()
+    # _telegram.updater.idle()
     logger.info('Finishing the application')
