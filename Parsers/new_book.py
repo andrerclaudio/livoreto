@@ -35,7 +35,7 @@ def isbn_lookup(isbnlike):
                               'Autor': str(book.authors[0]),
                               'Editora': publisher,
                               'ISBN-13': isbn,
-                              'Qtd. de Páginas': pages_qty + '\n',
+                              'Qtd. de Páginas': pages_qty,
                               'Link': book.link
                               })
         except Exception as e:

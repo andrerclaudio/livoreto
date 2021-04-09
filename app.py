@@ -9,7 +9,6 @@ from queue import Queue
 from threading import Thread
 
 # Added modules
-from flask import Flask
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Project modules
@@ -33,8 +32,6 @@ else:
                         datefmt='%d/%b/%Y - %H:%M:%S')
 
 logger = logging.getLogger(__name__)
-
-app = Flask(__name__)
 
 
 class InitializeTelegram(object):
@@ -147,22 +144,6 @@ class ProcessIncomingMessages(Thread):
                         logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
 
 
-class WebRequestResponse(Thread):
-    """Run a webpage"""
-
-    def __init__(self):
-        self.port = 5000
-        Thread.__init__(self, name='Web', args=())
-        self.daemon = True
-        self.start()
-
-    def run(self):
-        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            self.port = int(os.environ.get('PORT', 5000))
-
-        app.run(threaded=True, port=self.port)
-
-
 class ProcessRecommendationSystem(Thread):
     """Process the recommendation system"""
 
@@ -212,16 +193,13 @@ def error(update, context):
     logger.error('Update "%s" caused error "%s"', update, context.error)
 
 
-@app.route('/')
-def index():
-    return 'Ping page'
-
-
 def application():
     """All application has its initialization from here"""
     logger.info('Main application is running!')
     # Count available CPU Cores
     logger.debug("Number of cpu: %s", cpu())
+
+    # convert_database_format()
 
     # Initialize Webpage
     # WebRequestResponse()
