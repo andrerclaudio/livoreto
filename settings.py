@@ -8,13 +8,13 @@ class FunctionalSystemSettings(object):
 
     def __init__(self):
         # --------------------------------------------------------------------------------
-        """ ----  Mode work options ------
+        """ ----------- Mode work options -----------
         Development and Cloud     = 'dev&cloud'
         Development and Raspberry = 'dev&rasp'
         Production and Cloud      = 'prod&cloud'
         Production and Raspberry  = 'prod&rasp'
-        ------------------------------ """
-        self.WORK_MODE = 'dev&rasp'
+        ----------------------------------------- """
+        self.WORK_MODE = 'prod&cloud'
         # --------------------------------------------------------------------------------
         """
         
