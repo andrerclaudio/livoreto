@@ -206,7 +206,7 @@ def application():
     ProcessIncomingMessages(_telegram)
 
     # Start processing recommendation system
-    # ProcessRecommendationSystem()
+    ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
