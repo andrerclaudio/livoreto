@@ -4,7 +4,7 @@ import logging
 # Project modules
 from Parsers.new_book import isbn_lookup, book_descriptor, save_book
 from delivery import send_picture, send_message
-from menus import add_keyboard, MAIN_MENU_KEYBOARD, mount_keyboard
+from menus import add_keyboard, MAIN_MENU_KEYBOARD, mount_inline_keyboard
 
 # Added modules
 
@@ -56,14 +56,14 @@ def messages_parser(update, database):
         df = database.get('tREADING')
 
         if df is not None:
-            books = [book['BOOK'] for book in df]
-            keyboard = mount_keyboard(books)
-            add_keyboard(update, 'Veja as leituras em andamento e outras.', keyboard)
+            books = [(book['BOOK'], book['ISBN']) for book in df]
+            keyboard = mount_inline_keyboard(books)
+            send_message('<i><b>Escolha um livro abaixo para mais detalhes ...</b></i>', update, keyboard)
         else:
-            send_message('Nao tem nenhum livro cadastrado! =/', update)
+            send_message('Nenhuma leitura em andamento! =/', update)
     # --------------------------------------------------------------------------------------------------------------
     elif msg in button_back:
-        add_keyboard(update, 'Escolha uma das opcoes para continuar!', MAIN_MENU_KEYBOARD)
+        add_keyboard(update, 'Escolha uma das opções para continuar!', MAIN_MENU_KEYBOARD)
     # --------------------------------------------------------------------------------------------------------------
     else:
         # ISBN related functions

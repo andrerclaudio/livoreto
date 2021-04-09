@@ -9,12 +9,12 @@ from queue import Queue
 from threading import Thread
 
 # Added modules
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler
 
 # Project modules
 from Machine_learning.recommender_system import recommendation_tree
 from settings import settings
-from system_digest import message_digest
+from system_digest import message_digest, data_digest
 
 if settings.WORK_MODE == 'prod&rasp':
     # Print in file
@@ -55,15 +55,20 @@ class InitializeTelegram(object):
         # Telegram incoming messages Queue initializer
         self.msg_queue = Queue()
 
+        # Telegram incoming data callback Queue initializer
+        self.data_queue = Queue()
+
         # Connecting to Telegram API
         self.updater = Updater(token=telegram_token, use_context=True)
         dispatcher = self.updater.dispatcher
 
         # Creating handlers
         msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update, self.msg_queue))
+        callback_data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.data_queue))
 
         # Message handler must be the last one
         dispatcher.add_handler(msg_handler)
+        dispatcher.add_handler(callback_data_handler)
 
         # log all errors
         dispatcher.add_error_handler(error)
@@ -144,6 +149,45 @@ class ProcessIncomingMessages(Thread):
                         logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
 
 
+class ProcessIncomingData(Thread):
+    """Start processing all Telegram incoming data callback"""
+
+    def __init__(self, telegram_obj):
+        self.telegram_obj = telegram_obj
+        self.data_queue = telegram_obj.data_queue
+        Thread.__init__(self, name='Data callback dispatcher', args=())
+        self.daemon = True
+        self.start()
+
+    def run(self):
+
+        # Start ID queue in order to run just one task per Id
+        data_callback_library = ChatIdQueue()
+        logger.info('[START] Incoming Telegram data callback!')
+        """Process data callback while Telegram is running"""
+        while self.telegram_obj.updater.running:
+
+            if self.data_queue.qsize() > 0:
+                update = self.data_queue.get()
+                chat_id = update.callback_query.from_user['id']
+                # Check if the Chat ID is already being processed
+                if data_callback_library.fetch_id(chat_id):
+                    self.data_queue.put(update)
+                else:
+                    try:
+                        p = Process(target=data_digest,
+                                    args=(update, self.telegram_obj),
+                                    name='Data callback digest')
+                        p.daemon = True
+                        p.start()
+                        data_callback_library.add_id(chat_id, p)
+                    except ProcessError as e:
+                        logger.exception('{}'.format(e), exc_info=False)
+                    finally:
+                        # Show the message queue size
+                        logger.info('[Data dequeue: {}]'.format(self.data_queue.qsize()))
+
+
 class ProcessRecommendationSystem(Thread):
     """Process the recommendation system"""
 
@@ -176,6 +220,22 @@ class ProcessRecommendationSystem(Thread):
                     settings.last_recommendation_run = time.time()
 
 
+def telegram_data(update, data_queue):
+    """All received Telegram messages is queued here"""
+    try:
+        query = update.callback_query
+        # CallbackQueries need to be answered, even if no notification to the user is needed
+        query.answer('Aguarde!')
+
+        logger.debug('Chat ID: {}'.format(query.from_user['id']))
+
+        # Message Queue
+        data_queue.put(update)
+        logger.info('[Data enqueue: {}]'.format(int(data_queue.qsize())))
+    except Exception as e:
+        logger.exception('{}'.format(e), exc_info=False)
+
+
 def telegram_message(update, msg_queue):
     """All received Telegram messages is queued here"""
     try:
@@ -204,6 +264,9 @@ def application():
 
     # Start processing all Telegram messages
     ProcessIncomingMessages(_telegram)
+
+    # Start processing all Telegram data callback
+    ProcessIncomingData(_telegram)
 
     # Start processing recommendation system
     ProcessRecommendationSystem()

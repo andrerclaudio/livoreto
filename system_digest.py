@@ -8,6 +8,7 @@ from pytictoc import TicToc
 
 # Project modules
 from Database.database import DatabaseCollections, MongoDBConnection
+from Parsers.parser_data import data_callback_parser
 from Parsers.parser_message import messages_parser
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,34 @@ class ElapsedTime(object):
         _elapsed = self.t.tocvalue()
         d = timedelta(seconds=_elapsed)
         logger.debug('< {} >'.format(d))
+
+
+def data_digest(update, telegram_obj):
+    """Process data callback information"""
+    # Connect to Mongo DB Database
+    mongo = MongoDBConnection()
+    # Check if the connection is fine
+    if mongo.create_connection():
+        # Hold tables information
+        db = DatabaseCollections(mongo.client)
+        # Calculate the elapsed time to process the incoming information
+        elapsed = ElapsedTime()
+        # Process incoming messages
+        try:
+            query = update.callback_query
+            chat_id = str(query.from_user['id'])
+            # Connect to Database
+            db.connect(chat_id)
+            # Fetch collections data
+            db.refresh()
+            # Call the data callback parser
+            data_callback_parser(update, telegram_obj, db)
+            # And then, close the database
+            db.disconnect()
+
+            elapsed.elapsed()
+        except Exception as e:
+            logger.exception('{}'.format(e), exc_info=False)
 
 
 def message_digest(update):
