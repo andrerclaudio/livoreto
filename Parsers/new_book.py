@@ -77,6 +77,7 @@ def save_book(update, book_info, database):
               'START': today,
               'FINISH': '-',
               'QTY': int(book_info['Qtd. de Páginas']),
+              'PRED': '-',
               }
 
         database.save_data('tREADING', df)

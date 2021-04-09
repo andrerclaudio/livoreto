@@ -199,11 +199,6 @@ def application():
     # Count available CPU Cores
     logger.debug("Number of cpu: %s", cpu())
 
-    # convert_database_format()
-
-    # Initialize Webpage
-    # WebRequestResponse()
-
     # Initializing Telegram
     _telegram = InitializeTelegram()
 
@@ -211,7 +206,7 @@ def application():
     ProcessIncomingMessages(_telegram)
 
     # Start processing recommendation system
-    ProcessRecommendationSystem()
+    # ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
