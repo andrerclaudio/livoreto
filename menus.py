@@ -5,26 +5,37 @@ from telegram import InlineKeyboardButton, KeyboardButton, ReplyKeyboardRemove, 
 # Project modules
 from delivery import send_message as send
 
-MAIN_MENU_KEYBOARD = [[KeyboardButton('Leituras em andamento')],
-                      [KeyboardButton('Adicionar um novo livro'),
-                       KeyboardButton('Recomendações')]]
+MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖')],
+                      [KeyboardButton('📚 Adicionar um novo livro'),
+                       KeyboardButton('📋 Números')]]
 
 BOOK_NAME = 0
 BOOK_ISBN = 1
 
+YEAR_DESCRIPTOR = 0
+YEAR_MSG = 1
 
-def mount_inline_keyboard(fields):
+
+def mount_inline_keyboard(fields, parser):
     """
-    Mount a inline keyboard
+    Mount an inline keyboard
     """
 
     sub = []
     keyboard = []
 
-    for book in fields:
-        sub.append((InlineKeyboardButton(book[BOOK_NAME], callback_data='{}'.format(book[BOOK_ISBN]))))
-        keyboard.append(sub.copy())
-        sub.clear()
+    if parser == 'reading':
+        for book in fields:
+            sub.append(
+                InlineKeyboardButton(book[BOOK_NAME], callback_data='{}'.format(parser + '@' + str(book[BOOK_ISBN]))))
+            keyboard.append(sub.copy())
+            sub.clear()
+    elif parser == 'year_list':
+        for years in fields:
+            sub.append(InlineKeyboardButton(years[YEAR_DESCRIPTOR],
+                                            callback_data='{}'.format(parser + '@' + str(years[YEAR_MSG]))))
+            keyboard.append(sub.copy())
+            sub.clear()
 
     return InlineKeyboardMarkup(keyboard)
 

@@ -17,13 +17,18 @@ class FunctionalSystemSettings(object):
         self.WORK_MODE = 'prod&cloud'
         # --------------------------------------------------------------------------------
         """
-        
+        Recommendations System Settings.
         """
-        self.MINUTES = 15
+        self.MINUTES = 30
         self.run_at_initialization = True
         self.running_recommender = True
         self.last_recommendation_run = time.time()
         self.DELTA = 60 * self.MINUTES
+        # --------------------------------------------------------------------------------
+        """
+        Emoji list used in application. It is necessary to run some filters.
+        """
+        self.emoji_list = ['📋', '📚', '📖']
 
 
 settings = FunctionalSystemSettings()
