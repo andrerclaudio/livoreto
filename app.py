@@ -5,7 +5,6 @@ import os
 import time
 from multiprocessing import Process, cpu_count as cpu
 from multiprocessing import ProcessError
-from queue import Queue
 from threading import Thread
 
 # Added modules
@@ -52,19 +51,13 @@ class InitializeTelegram(object):
                 # 'prod&rasp'
                 telegram_token = config['DEFAULT']['token']
 
-        # Telegram incoming messages Queue initializer
-        self.msg_queue = Queue()
-
-        # Telegram incoming data callback Queue initializer
-        self.data_queue = Queue()
-
         # Connecting to Telegram API
         self.updater = Updater(token=telegram_token, use_context=True)
         dispatcher = self.updater.dispatcher
 
         # Creating handlers
-        msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update, self.msg_queue))
-        callback_data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.data_queue))
+        msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update))
+        callback_data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater))
 
         # Message handler must be the last one
         dispatcher.add_handler(msg_handler)
@@ -86,106 +79,6 @@ class InitializeTelegram(object):
             self.updater.start_polling(drop_pending_updates=True)
             while not self.updater.running:
                 pass
-
-
-class ChatIdQueue(object):
-    """Hold all Chat IDs that are being processed"""
-
-    def __init__(self):
-        self.chat_id = {}
-
-    def fetch_id(self, chat_id):
-        """Return if a Chat ID process is alive, if not, remove the Chat ID from the Dict"""
-        if chat_id in self.chat_id.keys():
-            p = self.chat_id[chat_id]
-            if p.is_alive():
-                return True
-            else:
-                del self.chat_id[chat_id]
-
-        return False
-
-    def add_id(self, chat_id, process):
-        """Hold a Chat ID and its Process number"""
-        self.chat_id[chat_id] = process
-
-
-class ProcessIncomingMessages(Thread):
-    """Start processing all Telegram incoming messages"""
-
-    def __init__(self, telegram_obj):
-        self.telegram_obj = telegram_obj
-        self.msg_queue = telegram_obj.msg_queue
-        Thread.__init__(self, name='Message dispatcher', args=())
-        self.daemon = True
-        self.start()
-
-    def run(self):
-
-        # Start ID queue in order to run just one task per Id
-        message_library = ChatIdQueue()
-        logger.info('[START] Incoming Telegram messages!')
-        """Process messages while Telegram is running"""
-        while self.telegram_obj.updater.running:
-
-            if self.msg_queue.qsize() > 0:
-                update = self.msg_queue.get()
-                chat_id = update.message.chat_id
-                # Check if the Chat ID is already being processed
-                if message_library.fetch_id(chat_id):
-                    self.msg_queue.put(update)
-                else:
-                    try:
-                        p = Process(target=message_digest,
-                                    args=(update,),
-                                    name='Message digest')
-                        p.daemon = True
-                        p.start()
-                        message_library.add_id(chat_id, p)
-                    except ProcessError as e:
-                        logger.exception('{}'.format(e), exc_info=False)
-                    finally:
-                        # Show the message queue size
-                        logger.info('[Message dequeue: {}]'.format(self.msg_queue.qsize()))
-
-
-class ProcessIncomingData(Thread):
-    """Start processing all Telegram incoming data callback"""
-
-    def __init__(self, telegram_obj):
-        self.telegram_obj = telegram_obj
-        self.data_queue = telegram_obj.data_queue
-        Thread.__init__(self, name='Data callback dispatcher', args=())
-        self.daemon = True
-        self.start()
-
-    def run(self):
-
-        # Start ID queue in order to run just one task per Id
-        data_callback_library = ChatIdQueue()
-        logger.info('[START] Incoming Telegram data callback!')
-        """Process data callback while Telegram is running"""
-        while self.telegram_obj.updater.running:
-
-            if self.data_queue.qsize() > 0:
-                update = self.data_queue.get()
-                chat_id = update.callback_query.from_user['id']
-                # Check if the Chat ID is already being processed
-                if data_callback_library.fetch_id(chat_id):
-                    self.data_queue.put(update)
-                else:
-                    try:
-                        p = Process(target=data_digest,
-                                    args=(update, self.telegram_obj),
-                                    name='Data callback digest')
-                        p.daemon = True
-                        p.start()
-                        data_callback_library.add_id(chat_id, p)
-                    except ProcessError as e:
-                        logger.exception('{}'.format(e), exc_info=False)
-                    finally:
-                        # Show the message queue size
-                        logger.info('[Data dequeue: {}]'.format(self.data_queue.qsize()))
 
 
 class ProcessRecommendationSystem(Thread):
@@ -220,30 +113,20 @@ class ProcessRecommendationSystem(Thread):
                     settings.last_recommendation_run = time.time()
 
 
-def telegram_data(update, data_queue):
+def telegram_data(update, updater):
     """All received Telegram messages is queued here"""
     try:
         query = update.callback_query
-        # CallbackQueries need to be answered, even if no notification to the user is needed
-        query.answer('Aguarde!')
-
-        logger.debug('Chat ID: {}'.format(query.from_user['id']))
-
-        # Message Queue
-        data_queue.put(update)
-        logger.info('[Data enqueue: {}]'.format(int(data_queue.qsize())))
+        query.answer('Por favor, aguarde!!')
+        data_digest(query, updater)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
 
-def telegram_message(update, msg_queue):
+def telegram_message(update):
     """All received Telegram messages is queued here"""
     try:
-        logger.debug('Chat ID: {}'.format(update.message.chat_id))
-
-        # Message Queue
-        msg_queue.put(update)
-        logger.info('[Message enqueue: {}]'.format(int(msg_queue.qsize())))
+        message_digest(update)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
@@ -262,14 +145,8 @@ def application():
     # Initializing Telegram
     _telegram = InitializeTelegram()
 
-    # Start processing all Telegram messages
-    ProcessIncomingMessages(_telegram)
-
-    # Start processing all Telegram data callback
-    ProcessIncomingData(_telegram)
-
     # Start processing recommendation system
-    ProcessRecommendationSystem()
+    # ProcessRecommendationSystem()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()

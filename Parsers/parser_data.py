@@ -16,13 +16,11 @@ PARSER = 0
 MSG = 1
 
 
-def data_callback_parser(update, telegram_obj, database):
+def data_callback_parser(query, updater, database):
     """
 
     """
-    query = update.callback_query
-    data = str(query.data)
-    data = data.split('@')
+    data = str(query.data).split('@')
     command = data[PARSER]
     msg = data[MSG]
 
@@ -40,7 +38,7 @@ def data_callback_parser(update, telegram_obj, database):
                         chat_id = str(query.from_user['id'])
                         msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
                         # Show book information
-                        send_message_object(chat_id, telegram_obj, ''.join(msg))
+                        send_message_object(chat_id, updater, ''.join(msg))
 
     elif command == 'year_list':
 
@@ -51,8 +49,8 @@ def data_callback_parser(update, telegram_obj, database):
             years = [str(datetime.fromtimestamp(data['FINISH']).year) for data in df]
             values = Counter(years)
             qty = values[selected_year]
-            msg = 'Você leu <i><b>{}</b></i> em <i><b>{}</b></i>.'.format(qty, msg)
-            send_message_object(chat_id, telegram_obj, msg)
+            msg = 'Você leu <i><b>{}</b></i> livros em <i><b>{}</b></i>.'.format(qty, msg)
+            send_message_object(chat_id, updater, msg)
 
             remove_indices = []
             idx = 0
@@ -67,4 +65,4 @@ def data_callback_parser(update, telegram_obj, database):
             for isbn in isbn_list:
                 book_info = isbn_lookup(isbn)
                 if len(book_info) > 0:
-                    send_message_object(chat_id, telegram_obj, book_info['Link'])
+                    send_message_object(chat_id, updater, book_info['Link'])

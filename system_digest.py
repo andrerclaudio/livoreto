@@ -27,7 +27,7 @@ class ElapsedTime(object):
         logger.debug('< {} >'.format(d))
 
 
-def data_digest(update, telegram_obj):
+def data_digest(query, updater):
     """Process data callback information"""
     # Connect to Mongo DB Database
     mongo = MongoDBConnection()
@@ -39,14 +39,13 @@ def data_digest(update, telegram_obj):
         elapsed = ElapsedTime()
         # Process incoming messages
         try:
-            query = update.callback_query
             chat_id = str(query.from_user['id'])
             # Connect to Database
             db.connect(chat_id)
             # Fetch collections data
             db.refresh()
             # Call the data callback parser
-            data_callback_parser(update, telegram_obj, db)
+            data_callback_parser(query, updater, db)
             # And then, close the database
             db.disconnect()
 

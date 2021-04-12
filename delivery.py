@@ -19,8 +19,8 @@ def send_document(update, document):
     update.message.reply_document(document=document)
 
 
-def send_message_object(chat_id, telegram, msg, keyboard=None):
+def send_message_object(chat_id, updater, msg, keyboard=None):
     """
     Send telegram message but now using the Telegram object
     """
-    telegram.updater.bot.send_message(chat_id=chat_id, parse_mode='HTML', text=msg, reply_markup=keyboard)
+    updater.bot.send_message(chat_id=chat_id, parse_mode='HTML', text=msg, reply_markup=keyboard)
