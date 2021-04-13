@@ -29,7 +29,7 @@ def isbn_lookup(isbnlike):
             book = good_reads.book(isbn=isbn)
 
             publisher = book.publisher if book.publisher is not None else '-'
-            pages_qty = book.num_pages if book.num_pages is not None else '-'
+            pages_qty = book.num_pages if book.num_pages is not None else int(0)
 
             book_info.update({'Título': book.title,
                               'Autor': str(book.authors[0]),

@@ -6,7 +6,6 @@ from datetime import datetime
 from Parsers.new_book import isbn_lookup, book_descriptor, save_book
 from delivery import send_picture, send_message
 from menus import add_keyboard, MAIN_MENU_KEYBOARD, mount_inline_keyboard
-from settings import settings
 
 # Added modules
 
@@ -23,13 +22,11 @@ def messages_parser(update, database):
     command_start = ['/start']
 
     # Buttons
-    button_new_book = [' adicionar um novo livro']
-    button_reading = [' leituras em andamento ']
-    button_numbers = [' números']
+    button_new_book = ['📚 Adicionar um novo livro']
+    button_reading = ['📖 Leituras em andamento 📖']
+    button_numbers = ['📋 Números']
 
-    raw = update.message.text
-    msg = ''.join(c for c in raw if c not in settings.emoji_list)
-    msg = msg.lower()
+    msg = update.message.text
 
     # --------------------------------------------------------------------------------------------------------------
     if msg in command_start:

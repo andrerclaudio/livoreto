@@ -10,9 +10,9 @@ class FunctionalSystemSettings(object):
         # --------------------------------------------------------------------------------
         """ ----------- Mode work options -----------
         Development and Cloud     = 'dev&cloud'
-        Development and Raspberry = 'dev&rasp'
+        Development and Notebook  = 'dev&pc'
         Production and Cloud      = 'prod&cloud'
-        Production and Raspberry  = 'prod&rasp'
+        Production and Notebook   = 'prod&pc'
         ----------------------------------------- """
         self.WORK_MODE = 'prod&cloud'
         # --------------------------------------------------------------------------------
@@ -25,10 +25,6 @@ class FunctionalSystemSettings(object):
         self.last_recommendation_run = time.time()
         self.DELTA = 60 * self.MINUTES
         # --------------------------------------------------------------------------------
-        """
-        Emoji list used in application. It is necessary to run some filters.
-        """
-        self.emoji_list = ['📋', '📚', '📖']
 
 
 settings = FunctionalSystemSettings()

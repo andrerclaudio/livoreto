@@ -3,12 +3,12 @@ import logging
 from collections import Counter
 from datetime import datetime
 
+# Added modules
+import pandas as pd
+
 # Project modules
 from Parsers.new_book import isbn_lookup
 from delivery import send_message_object
-
-# Added modules
-
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ def data_callback_parser(query, updater, database):
             years = [str(datetime.fromtimestamp(data['FINISH']).year) for data in df]
             values = Counter(years)
             qty = values[selected_year]
-            msg = 'Você leu <i><b>{}</b></i> livros em <i><b>{}</b></i>.'.format(qty, msg)
+            msg = 'Você leu <i><b>{}</b></i> livros em <i><b>{}</b></i>.'.format(qty, selected_year)
             send_message_object(chat_id, updater, msg)
 
             remove_indices = []
@@ -59,9 +59,14 @@ def data_callback_parser(query, updater, database):
                     remove_indices.append(idx)
                 idx += 1
 
-            df = [i for j, i in enumerate(df) if j not in remove_indices]
-            isbn_list = [data['ISBN'] for data in df]
+            data = [i for j, i in enumerate(df) if j not in remove_indices]
+            df = pd.DataFrame(data)
 
+            pages = df['QTY'].sum()
+            msg = 'Você leu <i><b>{}</b></i> páginas em <i><b>{}</b></i>.'.format(pages, selected_year)
+            send_message_object(chat_id, updater, msg)
+
+            isbn_list = df['ISBN'].tolist()
             for isbn in isbn_list:
                 book_info = isbn_lookup(isbn)
                 if len(book_info) > 0:

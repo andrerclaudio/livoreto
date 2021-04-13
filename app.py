@@ -15,7 +15,7 @@ from Machine_learning.recommender_system import recommendation_tree
 from settings import settings
 from system_digest import message_digest, data_digest
 
-if settings.WORK_MODE == 'prod&rasp':
+if settings.WORK_MODE == 'prod&pc':
     # Print in file
     logging.basicConfig(filename='logs.log',
                         filemode='w',
@@ -45,10 +45,10 @@ class InitializeTelegram(object):
         else:
             config = configparser.ConfigParser()
             config.read_file(open('config.ini'))
-            if settings.WORK_MODE == 'dev&rasp':
+            if settings.WORK_MODE == 'dev&pc':
                 telegram_token = config['DEV']['token']
             else:
-                # 'prod&rasp'
+                # 'prod&pc'
                 telegram_token = config['DEFAULT']['token']
 
         # Connecting to Telegram API
