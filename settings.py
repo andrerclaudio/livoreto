@@ -14,7 +14,7 @@ class FunctionalSystemSettings(object):
         Production and Cloud      = 'prod&cloud'
         Production and Notebook   = 'prod&pc'
         ----------------------------------------- """
-        self.WORK_MODE = 'dev&pc'
+        self.WORK_MODE = 'prod&cloud'
         # --------------------------------------------------------------------------------
         """
         Recommendations System Settings.
