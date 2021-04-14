@@ -4,8 +4,9 @@ from datetime import datetime
 
 # Project modules
 from Parsers.new_book import isbn_lookup, book_descriptor, save_book
+from Parsers.parser_data import CallBackDataList
 from delivery import send_picture, send_message
-from menus import add_keyboard, MAIN_MENU_KEYBOARD, mount_inline_keyboard
+from menus import mount_inline_keyboard
 
 # Added modules
 
@@ -18,9 +19,6 @@ def messages_parser(update, database):
     Incoming message parser
     """
 
-    # Commands
-    command_start = ['/start']
-
     # Buttons
     button_new_book = ['📚 Adicionar um novo livro']
     button_reading = ['📖 Leituras em andamento 📖']
@@ -28,20 +26,11 @@ def messages_parser(update, database):
 
     msg = update.message.text
 
-    # --------------------------------------------------------------------------------------------------------------
-    if msg in command_start:
-        """
-        Show an welcome message.
-        """
-        send_picture(update, open('Pictures/welcome_pic.jpg', 'rb'))
+    # Load possibles callback data
+    callback_data_list = CallBackDataList()
 
-        msg = 'Olá, amigo leitor!\n' \
-              'Clique em <i><b>"Adicionar um novo livro"</b></i> para que possamos começar!\n'
-
-        # Start the main menu
-        add_keyboard(update, msg, MAIN_MENU_KEYBOARD)
     # --------------------------------------------------------------------------------------------------------------
-    elif msg in button_new_book:
+    if msg in button_new_book:
         """
         Tell the user about ISBN value.
         """
@@ -56,8 +45,8 @@ def messages_parser(update, database):
         df = database.get('tREADING')
         if df is not None:
             books = [(book['BOOK'], book['ISBN']) for book in df]
-            command = 'reading'
-            keyboard = mount_inline_keyboard(books, command)
+            data = callback_data_list.READING
+            keyboard = mount_inline_keyboard(books, data)
             send_message('<i><b>Escolha um livro abaixo para mais detalhes ...</b></i>', update, keyboard)
         else:
             send_message('Nenhuma leitura em andamento! 🙄', update)
@@ -67,9 +56,9 @@ def messages_parser(update, database):
         if df is not None:
             years_list = [datetime.fromtimestamp(data['FINISH']).year for data in df]
             years_list = list(set(years_list))
-            data = [(str(year), str(year)) for year in years_list]
-            command = 'year_list'
-            keyboard = mount_inline_keyboard(data, command)
+            years = [str(year) for year in years_list]
+            data = callback_data_list.HISTORY_YEARS
+            keyboard = mount_inline_keyboard(years, data)
             send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
         else:
             send_message('Eu ainda não tenho alguns números para te mostrar! 🙄', update)

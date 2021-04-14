@@ -12,39 +12,44 @@ from delivery import send_message_object
 
 logger = logging.getLogger(__name__)
 
-PARSER = 0
-MSG = 1
+DATA_INDEX = 0
+MSG_INDEX = 1
+
+
+class CallBackDataList(object):
+    """A simple organization of all possible callback incoming data"""
+
+    def __init__(self):
+        self.CHAR_SEPARATOR = '@'
+        self.READING = 'current books'
+        self.HISTORY_YEARS = 'years list'
 
 
 def data_callback_parser(query, updater, database):
     """
 
     """
-    data = str(query.data).split('@')
-    command = data[PARSER]
-    msg = data[MSG]
+    callback_data_list = CallBackDataList()
+    chat_id = str(query.from_user['id'])
+    string = str(query.data).split(callback_data_list.CHAR_SEPARATOR)
+    data = string[DATA_INDEX]
+    msg = string[MSG_INDEX]
 
-    if command == 'reading':
+    if data == callback_data_list.READING:
 
         df = database.get('tREADING')
         if df is not None:
-            for book in df:
-                isbn = book['ISBN']
-                if msg == isbn:
+            book_info = isbn_lookup(msg)
+            # Check for a valid information
+            if len(book_info) > 0:
+                msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
+                # Show book information
+                send_message_object(chat_id, updater, ''.join(msg))
 
-                    book_info = isbn_lookup(isbn)
-                    # Check for a valid information
-                    if len(book_info) > 0:
-                        chat_id = str(query.from_user['id'])
-                        msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
-                        # Show book information
-                        send_message_object(chat_id, updater, ''.join(msg))
-
-    elif command == 'year_list':
+    elif data == callback_data_list.HISTORY_YEARS:
 
         df = database.get('tHISTORY')
         if df is not None:
-            chat_id = str(query.from_user['id'])
             selected_year = msg
             years = [str(datetime.fromtimestamp(data['FINISH']).year) for data in df]
             values = Counter(years)

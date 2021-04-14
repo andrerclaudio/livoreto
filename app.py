@@ -8,10 +8,12 @@ from multiprocessing import ProcessError
 from threading import Thread
 
 # Added modules
-from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler, CommandHandler
 
 # Project modules
 from Machine_learning.recommender_system import recommendation_tree
+from delivery import send_picture
+from menus import add_keyboard, MAIN_MENU_KEYBOARD
 from settings import settings
 from system_digest import message_digest, data_digest
 
@@ -56,12 +58,14 @@ class InitializeTelegram(object):
         dispatcher = self.updater.dispatcher
 
         # Creating handlers
+        start_handler = CommandHandler('start', lambda update, context: start(update))
+        data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater))
         msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update))
-        callback_data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater))
 
         # Message handler must be the last one
+        dispatcher.add_handler(start_handler)
+        dispatcher.add_handler(data_handler)
         dispatcher.add_handler(msg_handler)
-        dispatcher.add_handler(callback_data_handler)
 
         # log all errors
         dispatcher.add_error_handler(error)
@@ -129,6 +133,19 @@ def telegram_message(update):
         message_digest(update)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
+
+
+def start(update):
+    """
+    Show an welcome message.
+    """
+    send_picture(update, open('Pictures/welcome_pic.jpg', 'rb'))
+
+    msg = 'Olá, amigo leitor!\n' \
+          'Clique em <i><b>"Adicionar um novo livro"</b></i> para que possamos começar!\n'
+
+    # Start the main menu
+    add_keyboard(update, msg, MAIN_MENU_KEYBOARD)
 
 
 def error(update, context):

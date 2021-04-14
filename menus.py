@@ -3,20 +3,18 @@ from telegram import InlineKeyboardButton, KeyboardButton, ReplyKeyboardRemove, 
     InlineKeyboardMarkup
 
 # Project modules
+from Parsers.parser_data import CallBackDataList
 from delivery import send_message as send
 
 MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖')],
                       [KeyboardButton('📚 Adicionar um novo livro'),
                        KeyboardButton('📋 Números')]]
 
-BOOK_NAME = 0
-BOOK_ISBN = 1
-
-YEAR_DESCRIPTOR = 0
-YEAR_MSG = 1
+BOOK_NAME_INDEX = 0
+BOOK_ISBN_INDEX = 1
 
 
-def mount_inline_keyboard(fields, parser):
+def mount_inline_keyboard(fields, data):
     """
     Mount an inline keyboard
     """
@@ -24,16 +22,22 @@ def mount_inline_keyboard(fields, parser):
     sub = []
     keyboard = []
 
-    if parser == 'reading':
+    # Load possibles callback data
+    callback_data_list = CallBackDataList()
+
+    if data == callback_data_list.READING:
         for book in fields:
             sub.append(
-                InlineKeyboardButton(book[BOOK_NAME], callback_data='{}'.format(parser + '@' + str(book[BOOK_ISBN]))))
+                InlineKeyboardButton(book[BOOK_NAME_INDEX], callback_data='{}'.format(data +
+                                                                                      callback_data_list.CHAR_SEPARATOR
+                                                                                      + str(book[BOOK_ISBN_INDEX]))))
             keyboard.append(sub.copy())
             sub.clear()
-    elif parser == 'year_list':
+    elif data == callback_data_list.HISTORY_YEARS:
         for years in fields:
-            sub.append(InlineKeyboardButton(years[YEAR_DESCRIPTOR],
-                                            callback_data='{}'.format(parser + '@' + str(years[YEAR_MSG]))))
+            sub.append(InlineKeyboardButton(years,
+                                            callback_data='{}'.format(data + callback_data_list.CHAR_SEPARATOR +
+                                                                      years)))
             keyboard.append(sub.copy())
             sub.clear()
 
