@@ -3,42 +3,54 @@ import configparser
 import logging
 import os
 import time
-from multiprocessing import Process, cpu_count as cpu
-from multiprocessing import ProcessError
-from threading import Thread
+from multiprocessing import cpu_count as cpu
 
 # Added modules
 from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler, CommandHandler
 
 # Project modules
-from Machine_learning.recommender_system import recommendation_tree
+from Book.client import GoodReadsClient
 from delivery import send_picture
 from menus import add_keyboard, MAIN_MENU_KEYBOARD
-from settings import settings
 from system_digest import message_digest, data_digest
 
-if settings.WORK_MODE == 'prod&pc':
-    # Print in file
-    logging.basicConfig(filename='logs.log',
-                        filemode='w',
-                        level=logging.INFO,
-                        format='%(asctime)s | %(process)d | %(name)s | %(thread)d | %(threadName)s | %(levelname)s: '
-                               '%(message)s',
-                        datefmt='%d/%b/%Y - %H:%M:%S')
-else:
-    # Print in software terminal
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s | %(process)d | %(threadName)s | %(levelname)s: '
-                               '%(message)s',
-                        datefmt='%d/%b/%Y - %H:%M:%S')
+# Print in software terminal
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s | %(process)d | %(threadName)s | %(levelname)s: '
+                           '%(message)s',
+                    datefmt='%d/%b/%Y - %H:%M:%S')
 
 logger = logging.getLogger(__name__)
+
+
+class FunctionalSystemSettings(object):
+
+    def __init__(self, environment):
+        # --------------------------------------------------------------------------------
+        """ ----------- Mode work options -----------
+        Development and Notebook  = 'dev&pc'
+        Production and Cloud      = 'prod&cloud'
+        ----------------------------------------- """
+        if environment == 'Heroku':
+            self.WORK_MODE = 'prod&cloud'
+        else:
+            self.WORK_MODE = 'dev&pc'
+        # --------------------------------------------------------------------------------
+        """
+        Recommendations System Settings.
+        """
+        self.MINUTES = 30
+        self.run_at_initialization = True
+        self.running_recommender = True
+        self.last_recommendation_run = time.time()
+        self.DELTA = 60 * self.MINUTES
+        # --------------------------------------------------------------------------------
 
 
 class InitializeTelegram(object):
     """Telegram Bot initializer"""
 
-    def __init__(self):
+    def __init__(self, settings, good_reads):
         # Configuring bot
         if settings.WORK_MODE == 'dev&cloud':
             telegram_token = os.environ['DEV']
@@ -59,8 +71,10 @@ class InitializeTelegram(object):
 
         # Creating handlers
         start_handler = CommandHandler('start', lambda update, context: start(update))
-        data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater))
-        msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update))
+        data_handler = CallbackQueryHandler(
+            lambda update, context: telegram_data(update, self.updater, settings, good_reads))
+        msg_handler = MessageHandler(Filters.text,
+                                     lambda update, context: telegram_message(update, settings, good_reads))
 
         # Message handler must be the last one
         dispatcher.add_handler(start_handler)
@@ -85,52 +99,52 @@ class InitializeTelegram(object):
                 pass
 
 
-class ProcessRecommendationSystem(Thread):
-    """Process the recommendation system"""
+# class ProcessRecommendationSystem(Thread):
+#     """Process the recommendation system"""
+#
+#     def __init__(self, settings):
+#         self.settings = settings
+#         Thread.__init__(self, name='Recommendation system', args=())
+#         self.daemon = True
+#         self.start()
+#
+#     def run(self):
+#         logger.info('[START] Recommendation system!')
+#         while True:
+#             """Periodically calls for recommendation machine"""
+#             if (time.time() - self.settings.last_recommendation_run >= self.settings.DELTA and self.settings.running_recommender) or self.settings.run_at_initialization:
+#
+#                 self.settings.run_at_initialization = False
+#                 try:
+#                     self.settings.running_recommender = False
+#                     p = Process(target=recommendation_tree,
+#                                 name='Recommender system')
+#                     p.daemon = True
+#                     p.start()
+#                     p.join()
+#                 except ProcessError as e:
+#                     logger.exception('{}'.format(e), exc_info=False)
+#                 finally:
+#                     # Signalize a new running can happen
+#                     self.settings.running_recommender = True
+#                     # Register when the task have finished
+#                     self.settings.last_recommendation_run = time.time()
 
-    def __init__(self):
-        Thread.__init__(self, name='Recommendation system', args=())
-        self.daemon = True
-        self.start()
 
-    def run(self):
-        logger.info('[START] Recommendation system!')
-        while True:
-            """Periodically calls for recommendation machine"""
-            if (time.time() - settings.last_recommendation_run >= settings.DELTA and settings.running_recommender) or \
-                    settings.run_at_initialization:
-
-                settings.run_at_initialization = False
-                try:
-                    settings.running_recommender = False
-                    p = Process(target=recommendation_tree,
-                                name='Recommender system')
-                    p.daemon = True
-                    p.start()
-                    p.join()
-                except ProcessError as e:
-                    logger.exception('{}'.format(e), exc_info=False)
-                finally:
-                    # Signalize a new running can happen
-                    settings.running_recommender = True
-                    # Register when the task have finished
-                    settings.last_recommendation_run = time.time()
-
-
-def telegram_data(update, updater):
+def telegram_data(update, updater, settings, good_reads):
     """All received Telegram messages is queued here"""
     try:
         query = update.callback_query
         query.answer('Por favor, aguarde!!')
-        data_digest(query, updater)
+        data_digest(query, updater, settings, good_reads)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
 
-def telegram_message(update):
+def telegram_message(update, settings, good_reads):
     """All received Telegram messages is queued here"""
     try:
-        message_digest(update)
+        message_digest(update, settings, good_reads)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
@@ -153,17 +167,22 @@ def error(update, context):
     logger.error('Update "%s" caused error "%s"', update, context.error)
 
 
-def application():
+def application(environment):
     """All application has its initialization from here"""
     logger.info('Main application is running!')
     # Count available CPU Cores
     logger.debug("Number of cpu: %s", cpu())
 
+    logger.info('Environment: {}'.format(environment))
+    settings = FunctionalSystemSettings(environment)
+
+    good_reads = GoodReadsClient(settings)
+
     # Initializing Telegram
-    _telegram = InitializeTelegram()
+    _telegram = InitializeTelegram(settings, good_reads)
 
     # Start processing recommendation system
-    # ProcessRecommendationSystem()
+    # ProcessRecommendationSystem(settings)
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()

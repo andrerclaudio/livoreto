@@ -7,7 +7,6 @@ import os
 from pymongo import MongoClient
 
 # Project modules
-from settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class MongoDBConnection(object):
     Create a connection with MongoDB database
     """
 
-    def __init__(self):
+    def __init__(self, settings):
         # Connection indexes to database file
         self.client = None
 

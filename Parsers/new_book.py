@@ -6,13 +6,12 @@ import time
 import isbnlib
 
 # Project modules
-from Book.client import good_reads_client as good_reads
 from delivery import send_message
 
 logger = logging.getLogger(__name__)
 
 
-def isbn_lookup(isbnlike):
+def isbn_lookup(isbnlike, good_reads):
     """
     Fetch in Good Reads for a given ISBN code
     """

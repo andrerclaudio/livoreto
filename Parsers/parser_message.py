@@ -14,7 +14,7 @@ from menus import mount_inline_keyboard
 logger = logging.getLogger(__name__)
 
 
-def messages_parser(update, database):
+def messages_parser(update, database, good_reads):
     """
     Incoming message parser
     """
@@ -65,7 +65,7 @@ def messages_parser(update, database):
     # --------------------------------------------------------------------------------------------------------------
     else:
         # ISBN related functions
-        book_info = isbn_lookup(msg)
+        book_info = isbn_lookup(msg, good_reads)
         # Check for a valid information
         if len(book_info) > 0:
             # Show book information

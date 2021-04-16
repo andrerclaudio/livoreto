@@ -27,10 +27,10 @@ class ElapsedTime(object):
         logger.debug('< {} >'.format(d))
 
 
-def data_digest(query, updater):
+def data_digest(query, updater, settings, good_reads):
     """Process data callback information"""
     # Connect to Mongo DB Database
-    mongo = MongoDBConnection()
+    mongo = MongoDBConnection(settings)
     # Check if the connection is fine
     if mongo.create_connection():
         # Hold tables information
@@ -45,7 +45,7 @@ def data_digest(query, updater):
             # Fetch collections data
             db.refresh()
             # Call the data callback parser
-            data_callback_parser(query, updater, db)
+            data_callback_parser(query, updater, db, good_reads)
             # And then, close the database
             db.disconnect()
 
@@ -54,10 +54,10 @@ def data_digest(query, updater):
             logger.exception('{}'.format(e), exc_info=False)
 
 
-def message_digest(update):
+def message_digest(update, settings, good_reads):
     """Process message information"""
     # Connect to Mongo DB Database
-    mongo = MongoDBConnection()
+    mongo = MongoDBConnection(settings)
     # Check if the connection is fine
     if mongo.create_connection():
         # Hold tables information
@@ -69,7 +69,7 @@ def message_digest(update):
             # Parse the incoming user credentials and open its database file
             verify_user_credentials(update, db)
             # Call the message parser
-            messages_parser(update, db)
+            messages_parser(update, db, good_reads)
             # And then, close the database
             db.disconnect()
 

@@ -25,7 +25,7 @@ class CallBackDataList(object):
         self.HISTORY_YEARS = 'years list'
 
 
-def data_callback_parser(query, updater, database):
+def data_callback_parser(query, updater, database, good_reads):
     """
 
     """
@@ -39,7 +39,7 @@ def data_callback_parser(query, updater, database):
 
         df = database.get('tREADING')
         if df is not None:
-            book_info = isbn_lookup(msg)
+            book_info = isbn_lookup(msg, good_reads)
             # Check for a valid information
             if len(book_info) > 0:
                 msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
@@ -73,6 +73,6 @@ def data_callback_parser(query, updater, database):
 
             isbn_list = df['ISBN'].tolist()
             for isbn in isbn_list:
-                book_info = isbn_lookup(isbn)
+                book_info = isbn_lookup(isbn, good_reads)
                 if len(book_info) > 0:
                     send_message_object(chat_id, updater, book_info['Link'])

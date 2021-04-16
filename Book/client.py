@@ -4,7 +4,6 @@ import configparser
 import os
 import webbrowser
 
-from settings import settings
 # Project modules
 from .author import GoodreadsAuthor
 from .book import GoodreadsBook
@@ -23,7 +22,7 @@ class GoodReadsInitializer(object):
     GoodReads initializer
     """
 
-    def __init__(self):
+    def __init__(self, settings):
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
             key = os.environ['GOOD_READS_KEY']
             secret = os.environ['GOOD_READS_SECRET']
@@ -35,12 +34,6 @@ class GoodReadsInitializer(object):
 
         self.good_reads_key = key
         self.good_reads_secret = secret
-
-    def get_secret(self):
-        return self.good_reads_secret
-
-    def get_key(self):
-        return self.good_reads_key
 
 
 class GoodReadsClientException(Exception):
@@ -54,11 +47,12 @@ class GoodReadsClientException(Exception):
 class GoodReadsClient(object):
     base_url = "https://www.goodreads.com/"
 
-    def __init__(self, client_key, client_secret):
+    def __init__(self, settings):
         """Initialize the client"""
+        self.good_reads = GoodReadsInitializer(settings)
         self.session = None
-        self.client_key = client_key
-        self.client_secret = client_secret
+        self.client_key = self.good_reads.good_reads_key
+        self.client_secret = self.good_reads.good_reads_secret
 
     @property
     def query_dict(self):
@@ -198,7 +192,3 @@ class GoodReadsClient(object):
         """Get a review"""
         resp = self.request("/review/show.xml", {'id': review_id})
         return GoodreadsReview(resp['review'])
-
-
-good_reads = GoodReadsInitializer()
-good_reads_client = GoodReadsClient(good_reads.get_key(), good_reads.get_secret())
