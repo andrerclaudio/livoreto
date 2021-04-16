@@ -37,5 +37,5 @@ RUN pip3 install --no-cache-dir --trusted-host pypi.python.org -r /tmp/requireme
 RUN apt update && apt-get install -y --no-install-recommends --yes
 RUN apt upgrade -y
 
-CMD ["python", "main.py Heroku"]
+CMD ["python", "main.py", "Heroku"]
  
