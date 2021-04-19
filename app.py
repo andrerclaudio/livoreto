@@ -4,7 +4,9 @@ import logging
 import os
 import time
 from multiprocessing import cpu_count as cpu
+from threading import Thread
 
+from flask import Flask
 # Added modules
 from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler, CommandHandler
 
@@ -20,7 +22,26 @@ logging.basicConfig(level=logging.INFO,
                            '%(message)s',
                     datefmt='%d/%b/%Y - %H:%M:%S')
 
+app = Flask(__name__)
 logger = logging.getLogger(__name__)
+
+
+@app.route('/')
+def index():
+    return 'Ping page'
+
+
+class WebRequestResponse(Thread):
+    """Run a webpage"""
+
+    def __init__(self):
+        self.port = 5000
+        Thread.__init__(self, name='Web', args=())
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        app.run(threaded=True, port=self.port)
 
 
 class FunctionalSystemSettings(object):
@@ -183,6 +204,9 @@ def application(environment):
 
     # Start processing recommendation system
     # ProcessRecommendationSystem(settings)
+
+    # Initialize Webpage
+    WebRequestResponse()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()

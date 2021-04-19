@@ -37,14 +37,24 @@ def data_callback_parser(query, updater, database, good_reads):
 
     if data == callback_data_list.READING:
 
-        df = database.get('tREADING')
-        if df is not None:
+        data = database.get('tREADING')
+        if data is not None:
+            df = pd.DataFrame(data)
+            filtered = df.loc[df['ISBN'] == msg]
+
+            start_day = datetime.fromtimestamp(filtered['START'])
+
             book_info = isbn_lookup(msg, good_reads)
             # Check for a valid information
             if len(book_info) > 0:
                 msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
                 # Show book information
                 send_message_object(chat_id, updater, ''.join(msg))
+
+                day = start_day.day
+                month = start_day.month
+                msg = '{} {}'.format(day, month)
+                send_message_object(chat_id, updater, msg)
 
     elif data == callback_data_list.HISTORY_YEARS:
 

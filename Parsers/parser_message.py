@@ -61,7 +61,7 @@ def messages_parser(update, database, good_reads):
             keyboard = mount_inline_keyboard(years, data)
             send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
         else:
-            send_message('Eu ainda não tenho alguns números para te mostrar! 🙄', update)
+            send_message('Eu ainda não tenho números para te mostrar! 🙄', update)
     # --------------------------------------------------------------------------------------------------------------
     else:
         # ISBN related functions
