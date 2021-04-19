@@ -35,7 +35,7 @@ class WebRequestResponse(Thread):
     """Run a webpage"""
 
     def __init__(self):
-        self.port = 80
+        self.port = 5000
         Thread.__init__(self, name='Web', args=())
         self.daemon = True
         self.start()
