@@ -200,7 +200,7 @@ def application(environment):
     good_reads = GoodReadsClient(settings)
 
     # Initializing Telegram
-    _telegram = InitializeTelegram(settings, good_reads)
+    # _telegram = InitializeTelegram(settings, good_reads)
 
     # Start processing recommendation system
     # ProcessRecommendationSystem(settings)
@@ -208,6 +208,9 @@ def application(environment):
     # Initialize Webpage
     WebRequestResponse()
 
+    while True:
+        pass
+
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
-    _telegram.updater.idle()
-    logger.info('Finishing the application')
+    # _telegram.updater.idle()
+    # logger.info('Finishing the application')
