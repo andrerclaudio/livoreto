@@ -167,11 +167,11 @@ def application(environment):
 
     good_reads = GoodReadsClient(settings)
 
-    # Initializing Telegram
-    _telegram = InitializeTelegram(settings, good_reads)
-
     # Initialize Webpage
     WebRequestResponse()
+
+    # Initializing Telegram
+    _telegram = InitializeTelegram(settings, good_reads)
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
