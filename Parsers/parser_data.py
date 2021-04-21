@@ -25,6 +25,15 @@ class CallBackDataList(object):
         self.HISTORY_YEARS = 'years list'
 
 
+def month_translator(number):
+    """ """
+
+    month_names = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
+                   'Outubro', 'Novembro', 'Dezembro']
+
+    return month_names[number]
+
+
 def data_callback_parser(query, updater, database, good_reads):
     """
 
@@ -52,8 +61,8 @@ def data_callback_parser(query, updater, database, good_reads):
                 send_message_object(chat_id, updater, ''.join(msg))
 
                 day = start_day.day
-                month = start_day.month
-                msg = '{} {}'.format(day, month)
+                month = month_translator(start_day.month)
+                msg = 'Iniciado em {} / {}'.format(day, month)
                 send_message_object(chat_id, updater, msg)
 
     elif data == callback_data_list.HISTORY_YEARS:
