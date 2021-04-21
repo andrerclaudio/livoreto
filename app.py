@@ -20,26 +20,7 @@ logging.basicConfig(level=logging.INFO,
                            '%(message)s',
                     datefmt='%d/%b/%Y - %H:%M:%S')
 
-# app = Flask(__name__)
 logger = logging.getLogger(__name__)
-
-
-# @app.route('/')
-# def index():
-#     return 'Ping page'
-
-
-# class WebRequestResponse(Thread):
-#     """Run a webpage"""
-#
-#     def __init__(self):
-#         self.port = 5000
-#         Thread.__init__(self, name='Web', args=())
-#         self.daemon = True
-#         self.start()
-#
-#   def run(self):
-#       app.run(threaded=True, port=self.port)
 
 
 class FunctionalSystemSettings(object):
@@ -118,38 +99,6 @@ class InitializeTelegram(object):
                 pass
 
 
-# class ProcessRecommendationSystem(Thread):
-#     """Process the recommendation system"""
-#
-#     def __init__(self, settings):
-#         self.settings = settings
-#         Thread.__init__(self, name='Recommendation system', args=())
-#         self.daemon = True
-#         self.start()
-#
-#     def run(self):
-#         logger.info('[START] Recommendation system!')
-#         while True:
-#             """Periodically calls for recommendation machine"""
-#             if (time.time() - self.settings.last_recommendation_run >= self.settings.DELTA and self.settings.running_recommender) or self.settings.run_at_initialization:
-#
-#                 self.settings.run_at_initialization = False
-#                 try:
-#                     self.settings.running_recommender = False
-#                     p = Process(target=recommendation_tree,
-#                                 name='Recommender system')
-#                     p.daemon = True
-#                     p.start()
-#                     p.join()
-#                 except ProcessError as e:
-#                     logger.exception('{}'.format(e), exc_info=False)
-#                 finally:
-#                     # Signalize a new running can happen
-#                     self.settings.running_recommender = True
-#                     # Register when the task have finished
-#                     self.settings.last_recommendation_run = time.time()
-
-
 def telegram_data(update, updater, settings, good_reads):
     """All received Telegram messages is queued here"""
     try:
@@ -199,12 +148,6 @@ def application(environment):
 
     # Initializing Telegram
     _telegram = InitializeTelegram(settings, good_reads)
-
-    # Start processing recommendation system
-    # ProcessRecommendationSystem(settings)
-
-    # Initialize Webpage
-    # WebRequestResponse()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
