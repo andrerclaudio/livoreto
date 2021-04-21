@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class MongoDBConnection(object):
     """
-    Create a connection with MongoDB database
+    Create a connection with MongoDB database.
     """
 
     def __init__(self, settings):
@@ -52,7 +52,7 @@ class DatabaseCollections(object):
 
     def _drop_collection(self, collection_name):
         """
-        Drop a specific collection
+        Drop a specific collection.
         """
         try:
             collection = self.db[collection_name]
@@ -70,7 +70,7 @@ class DatabaseCollections(object):
 
     def disconnect(self, server_close=True):
         """
-        Close database connection
+        Close database connection.
         """
         if self.connection_flag:
             try:
@@ -101,7 +101,7 @@ class DatabaseCollections(object):
 
     def save_data(self, collection_name, data):
         """
-        Save data to a given Collection
+        Save data to a given Collection.
         """
         # Check if there is a valid information to store
         if len(data) > 0:
@@ -114,9 +114,16 @@ class DatabaseCollections(object):
 
     def update_document(self, collection_name, data):
         """
-        Drop a given collection and create it again with new values
+        Update a given collection with new values.
         """
         # Check if there is a valid information to store
         if len(data) > 0:
             col = self.db[collection_name]
             col.save(data)
+
+    def drop_document(self, collection_name, doc_id):
+        """
+        Drop some document.
+        """
+        col = self.db[collection_name]
+        col.delete_one({'_id': doc_id})

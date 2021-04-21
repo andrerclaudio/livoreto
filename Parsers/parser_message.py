@@ -3,10 +3,9 @@ import logging
 from datetime import datetime
 
 # Project modules
-from Parsers.new_book import isbn_lookup, book_descriptor, save_book
-from Parsers.parser_data import CallBackDataList
+from Parsers.new_book import isbn_lookup, save_book
 from delivery import send_picture, send_message
-from menus import mount_inline_keyboard
+from menus import mount_inline_keyboard, CallBackDataList
 
 # Added modules
 
@@ -68,8 +67,6 @@ def messages_parser(update, database, good_reads):
         book_info = isbn_lookup(msg, good_reads)
         # Check for a valid information
         if len(book_info) > 0:
-            # Show book information
-            book_descriptor(update, book_info)
             # Save book info into the user Database
             save_book(update, book_info, database)
         else:

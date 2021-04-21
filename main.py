@@ -14,7 +14,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         environment = sys.argv[1]
     else:
-        environment = 'Local'
+        environment = 'Development'
 
     # Run the main function.
     main()

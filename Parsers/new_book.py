@@ -45,18 +45,13 @@ def isbn_lookup(isbnlike, good_reads):
         return book_info
 
 
-def book_descriptor(update, book_info):
-    """
-    Show book info
-    """
-    msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
-    send_message(''.join(msg), update)
-
-
 def save_book(update, book_info, database):
     """
     Save book in a database file
     """
+
+    # Show book information
+    book_descriptor(update, book_info)
 
     new_book = True
     df = database.get('tREADING')
@@ -86,3 +81,16 @@ def save_book(update, book_info, database):
         send_message('Você já está lendo este livro.\n'
                      'Se deseja adicioná-lo novamente e recomeçar a leitura, primeiro você deve abandonar '
                      'esta leitura dentro de <i><b>"Leituras em andamento"</b></i>!', update)
+
+
+def book_descriptor(update, book_info):
+    """
+    Show book info before adding it.
+    """
+    if book_info['Qtd. de Páginas'] == 0:
+        book_info['Qtd. de Páginas'] = '-'
+
+    book_info['Qtd. de Páginas'] = book_info['Qtd. de Páginas'] + '\n'
+
+    msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
+    send_message(''.join(msg), update)
