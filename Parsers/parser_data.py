@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 DATA_INDEX = 0
 MSG_INDEX = 1
 
+MONTH_NAMES_PT_BR = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
+                     'Outubro', 'Novembro', 'Dezembro']
+
 
 class CallBackDataList(object):
     """A simple organization of all possible callback incoming data"""
@@ -23,15 +26,6 @@ class CallBackDataList(object):
         self.CHAR_SEPARATOR = '@'
         self.READING = 'current books'
         self.HISTORY_YEARS = 'years list'
-
-
-def month_translator(number):
-    """ """
-
-    month_names = ['', 'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
-                   'Outubro', 'Novembro', 'Dezembro']
-
-    return month_names[number]
 
 
 def data_callback_parser(query, updater, database, good_reads):
@@ -61,8 +55,8 @@ def data_callback_parser(query, updater, database, good_reads):
                 send_message_object(chat_id, updater, ''.join(msg))
 
                 day = start_day.day
-                month = month_translator(start_day.month)
-                msg = 'Iniciado em {} / {}'.format(day, month)
+                month = MONTH_NAMES_PT_BR[start_day.month]
+                msg = 'Voce começou ele no dia {:0>2} de {}'.format(day, month)
                 send_message_object(chat_id, updater, msg)
 
     elif data == callback_data_list.HISTORY_YEARS:
