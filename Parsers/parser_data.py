@@ -27,7 +27,7 @@ READING_OPTIONS_FINISH_CURRENT_READING = 'Leitura finalizada'
 
 def data_callback_parser(query, updater, database, good_reads):
     """
-
+    Parse all data from inline buttons.
     """
     callback_data_list = CallBackDataList()
     chat_id = str(query.from_user['id'])

@@ -7,3 +7,5 @@ xmltodict
 rauth
 pandas
 scikit-learn
+Flask
+gunicorn

@@ -27,6 +27,8 @@ ENV TZ=America/Sao_Paulo
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+CMD gunicorn --bind 0.0.0.0:$PORT wsgi
+
 WORKDIR /livoreto
 ADD . /livoreto
 

@@ -4,7 +4,9 @@ import logging
 import os
 import time
 from multiprocessing import cpu_count as cpu
+from threading import Thread
 
+from flask import Flask
 # Added modules
 from telegram.ext import Updater, MessageHandler, Filters, CallbackQueryHandler, CommandHandler
 
@@ -20,6 +22,7 @@ logging.basicConfig(level=logging.INFO,
                            '%(message)s',
                     datefmt='%d/%b/%Y - %H:%M:%S')
 
+w = Flask(__name__)
 logger = logging.getLogger(__name__)
 
 
@@ -99,6 +102,24 @@ class InitializeTelegram(object):
                 pass
 
 
+@w.route('/')
+def index():
+    return 'Ping page'
+
+
+class WebRequestResponse(Thread):
+    """Run a webpage"""
+
+    def __init__(self):
+        self.port = int(os.environ.get('PORT', '8484'))
+        Thread.__init__(self, name='Web', args=())
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        w.run(threaded=True, port=self.port)
+
+
 def telegram_data(update, updater, settings, good_reads):
     """All received Telegram messages is queued here"""
     try:
@@ -148,6 +169,9 @@ def application(environment):
 
     # Initializing Telegram
     _telegram = InitializeTelegram(settings, good_reads)
+
+    # Initialize Webpage
+    WebRequestResponse()
 
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT, SIGTERM or SIGABRT
     _telegram.updater.idle()
