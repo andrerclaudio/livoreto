@@ -15,20 +15,10 @@ class MongoDBConnection(object):
     Create a connection with MongoDB database.
     """
 
-    def __init__(self, settings):
+    def __init__(self):
         # Connection indexes to database file
         self.client = None
-
-        key = os.environ['MONGODB']
-
-        # if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-        #     key = os.environ['MONGODB']
-        # else:
-        #     config = configparser.ConfigParser()
-        #     config.read_file(open('config.ini'))
-        #     key = config['MONGODB']['url']
-
-        self.connection_url = key
+        self.connection_url = os.environ['MONGODB']
 
     def create_connection(self):
         """Establish database connection"""

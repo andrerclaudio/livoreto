@@ -1,12 +1,6 @@
 # Application
-# docker run --rm -it --network livoreto_network -v $(pwd)/config.ini:/livoreto/config.ini:ro  andrerclaudio/livoreto:livoreto_dev
+# docker run --rm -it --env GOOD_READS_KEY --env GOOD_READS_SECRET  --env DEV --env MONGODB --network livoreto_network andrerclaudio/livoreto:livoreto_dev
 # docker build -f Dockerfile . -t andrerclaudio/livoreto:livoreto_dev
-
-# Database
-# docker run --rm -d --network livoreto_network -v $(pwd)/Mongodata:/data/db --name mongodb mongo
-# docker exec -i -t mongodb bash
-# mongodump --out /data/db/backup
-# mongorestore /data/db/backup
 
 # Network
 # docker network create --driver bridge livoreto_network
@@ -27,8 +21,6 @@ ENV TZ=America/Sao_Paulo
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# CMD gunicorn --bind 0.0.0.0:$PORT wsgi
-
 WORKDIR /livoreto
 ADD . /livoreto
 
@@ -39,5 +31,7 @@ RUN pip3 install --no-cache-dir --trusted-host pypi.python.org -r /tmp/requireme
 RUN apt update && apt-get install -y --no-install-recommends --yes
 RUN apt upgrade -y
 
+# EXPOSE 8484
+
 CMD ["python", "main.py", "Heroku"]
- 
+# CMD ["python", "main.py"]

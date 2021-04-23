@@ -21,21 +21,9 @@ class GoodReadsInitializer(object):
     GoodReads initializer
     """
 
-    def __init__(self, settings):
-        key = os.environ['GOOD_READS_KEY']
-        secret = os.environ['GOOD_READS_SECRET']
-
-        # if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-        #     key = os.environ['GOOD_READS_KEY']
-        #     secret = os.environ['GOOD_READS_SECRET']
-        # else:
-        #     config = configparser.ConfigParser()
-        #     config.read_file(open('config.ini'))
-        #     key = config['GOOD_READS_KEY']['key']
-        #     secret = config['GOOD_READS_SECRET']['secret']
-
-        self.good_reads_key = key
-        self.good_reads_secret = secret
+    def __init__(self):
+        self.good_reads_key = os.environ['GOOD_READS_KEY']
+        self.good_reads_secret = os.environ['GOOD_READS_SECRET']
 
 
 class GoodReadsClientException(Exception):
@@ -49,9 +37,9 @@ class GoodReadsClientException(Exception):
 class GoodReadsClient(object):
     base_url = "https://www.goodreads.com/"
 
-    def __init__(self, settings):
+    def __init__(self):
         """Initialize the client"""
-        self.good_reads = GoodReadsInitializer(settings)
+        self.good_reads = GoodReadsInitializer()
         self.session = None
         self.client_key = self.good_reads.good_reads_key
         self.client_secret = self.good_reads.good_reads_secret

@@ -29,14 +29,10 @@ class FunctionalSystemSettings(object):
 
     def __init__(self, environment):
         # --------------------------------------------------------------------------------
-        """ ----------- Mode work options -----------
-        Development and Notebook  = 'dev&pc'
-        Production and Cloud      = 'prod&cloud'
-        ----------------------------------------- """
         if environment == 'Heroku':
-            self.WORK_MODE = 'prod&cloud'
+            self.WORK_MODE = 'production'
         else:
-            self.WORK_MODE = 'dev&pc'
+            self.WORK_MODE = 'development'
         # --------------------------------------------------------------------------------
         """
         Recommendations System Settings.
@@ -55,23 +51,10 @@ class InitializeTelegram(object):
     def __init__(self, settings, good_reads):
         # Configuring bot
 
-        if settings.WORK_MODE == 'dev&pc':
+        if settings.WORK_MODE == 'development':
             telegram_token = os.environ['DEV']
         else:
             telegram_token = os.environ['DEFAULT']
-
-        # if settings.WORK_MODE == 'dev&cloud':
-        #     telegram_token = os.environ['DEV']
-        # elif settings.WORK_MODE == 'prod&cloud':
-        #     telegram_token = os.environ['DEFAULT']
-        # else:
-        #     config = configparser.ConfigParser()
-        #     config.read_file(open('config.ini'))
-        #     if settings.WORK_MODE == 'dev&pc':
-        #         telegram_token = config['DEV']['token']
-        #     else:
-        #         # 'prod&pc'
-        #         telegram_token = config['DEFAULT']['token']
 
         # Connecting to Telegram API
         self.updater = Updater(token=telegram_token, use_context=True)
@@ -79,10 +62,8 @@ class InitializeTelegram(object):
 
         # Creating handlers
         start_handler = CommandHandler('start', lambda update, context: start(update))
-        data_handler = CallbackQueryHandler(
-            lambda update, context: telegram_data(update, self.updater, settings, good_reads))
-        msg_handler = MessageHandler(Filters.text,
-                                     lambda update, context: telegram_message(update, settings, good_reads))
+        data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater, good_reads))
+        msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update, good_reads))
 
         # Message handler must be the last one
         dispatcher.add_handler(start_handler)
@@ -91,7 +72,7 @@ class InitializeTelegram(object):
 
         # log all errors
         dispatcher.add_error_handler(error)
-        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
+        if settings.WORK_MODE == 'production':
 
             self.port = int(os.environ.get('PORT', '80'))
             self.updater.start_webhook(listen="0.0.0.0",
@@ -105,6 +86,14 @@ class InitializeTelegram(object):
             self.updater.start_polling(drop_pending_updates=True)
             while not self.updater.running:
                 pass
+
+            # self.port = int(os.environ.get('PORT', '80'))
+            # self.updater.start_webhook(listen="0.0.0.0",
+            #                            port=self.port,
+            #                            url_path=telegram_token,
+            #                            webhook_url="https://f6308748adc5.ngrok.io/webhook",
+            #                            drop_pending_updates=True,
+            #                            )
 
 
 @w.route('/')
@@ -125,20 +114,20 @@ class WebRequestResponse(Thread):
         w.run(threaded=True, port=self.port)
 
 
-def telegram_data(update, updater, settings, good_reads):
+def telegram_data(update, updater, good_reads):
     """All received Telegram messages is queued here"""
     try:
         query = update.callback_query
         query.answer('Por favor, aguarde!!')
-        data_digest(query, updater, settings, good_reads)
+        data_digest(query, updater, good_reads)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
 
-def telegram_message(update, settings, good_reads):
+def telegram_message(update, good_reads):
     """All received Telegram messages is queued here"""
     try:
-        message_digest(update, settings, good_reads)
+        message_digest(update, good_reads)
     except Exception as e:
         logger.exception('{}'.format(e), exc_info=False)
 
@@ -170,7 +159,7 @@ def application(environment):
     logger.info('Environment: {}'.format(environment))
     settings = FunctionalSystemSettings(environment)
 
-    good_reads = GoodReadsClient(settings)
+    good_reads = GoodReadsClient()
 
     # Initialize Webpage
     # WebRequestResponse()
