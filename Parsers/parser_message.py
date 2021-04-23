@@ -5,7 +5,7 @@ from datetime import datetime
 # Project modules
 from Parsers.new_book import isbn_lookup, save_book
 from delivery import send_picture, send_message
-from menus import mount_inline_keyboard, CallBackDataList
+from menus import mount_inline_keyboard, CallBackDataList, add_keyboard, MAIN_MENU_KEYBOARD
 
 # Added modules
 
@@ -43,10 +43,13 @@ def messages_parser(update, database, good_reads):
     elif msg in button_reading:
         df = database.get('tREADING')
         if df is not None:
-            books = [(book['BOOK'], book['ISBN']) for book in df]
-            data = callback_data_list.READING
-            keyboard = mount_inline_keyboard(books, data)
-            send_message('<i><b>Escolha um livro abaixo para mais detalhes ...</b></i>', update, keyboard)
+            if len(df) > 0:
+                books = [(book['BOOK'], book['ISBN']) for book in df]
+                data = callback_data_list.READING
+                keyboard = mount_inline_keyboard(books, data)
+                send_message('<i><b>Escolha um livro abaixo para mais detalhes ...</b></i>', update, keyboard)
+            else:
+                send_message('Nenhuma leitura em andamento! 🙄', update)
         else:
             send_message('Nenhuma leitura em andamento! 🙄', update)
     # --------------------------------------------------------------------------------------------------------------
@@ -70,5 +73,7 @@ def messages_parser(update, database, good_reads):
             # Save book info into the user Database
             save_book(update, book_info, database)
         else:
-            send_message('Não encontrei o livro.\n'
-                         'Por favor, confirme o código ISBN digitado e tente novamente!', update)
+            msg = 'Não encontrei o livro.\n' \
+                  'Por favor, confirme o código ISBN digitado e tente novamente!'
+            # Start the main menu
+            add_keyboard(update, msg, MAIN_MENU_KEYBOARD)

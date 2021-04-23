@@ -1,5 +1,4 @@
 # Build-in modules
-import configparser
 import logging
 import os
 import time
@@ -55,18 +54,24 @@ class InitializeTelegram(object):
 
     def __init__(self, settings, good_reads):
         # Configuring bot
-        if settings.WORK_MODE == 'dev&cloud':
+
+        if settings.WORK_MODE == 'dev&pc':
             telegram_token = os.environ['DEV']
-        elif settings.WORK_MODE == 'prod&cloud':
-            telegram_token = os.environ['DEFAULT']
         else:
-            config = configparser.ConfigParser()
-            config.read_file(open('config.ini'))
-            if settings.WORK_MODE == 'dev&pc':
-                telegram_token = config['DEV']['token']
-            else:
-                # 'prod&pc'
-                telegram_token = config['DEFAULT']['token']
+            telegram_token = os.environ['DEFAULT']
+
+        # if settings.WORK_MODE == 'dev&cloud':
+        #     telegram_token = os.environ['DEV']
+        # elif settings.WORK_MODE == 'prod&cloud':
+        #     telegram_token = os.environ['DEFAULT']
+        # else:
+        #     config = configparser.ConfigParser()
+        #     config.read_file(open('config.ini'))
+        #     if settings.WORK_MODE == 'dev&pc':
+        #         telegram_token = config['DEV']['token']
+        #     else:
+        #         # 'prod&pc'
+        #         telegram_token = config['DEFAULT']['token']
 
         # Connecting to Telegram API
         self.updater = Updater(token=telegram_token, use_context=True)
@@ -86,15 +91,15 @@ class InitializeTelegram(object):
 
         # log all errors
         dispatcher.add_error_handler(error)
-
         if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
+
             self.port = int(os.environ.get('PORT', '80'))
             self.updater.start_webhook(listen="0.0.0.0",
                                        port=self.port,
                                        url_path=telegram_token,
-                                       webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token)
+                                       webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token),
+                                       drop_pending_updates=True,
                                        )
-            # self.updater.idle()
         else:
             # and then, start pulling for new messages
             self.updater.start_polling(drop_pending_updates=True)
@@ -168,7 +173,7 @@ def application(environment):
     good_reads = GoodReadsClient(settings)
 
     # Initialize Webpage
-    WebRequestResponse()
+    # WebRequestResponse()
 
     # Initializing Telegram
     _telegram = InitializeTelegram(settings, good_reads)

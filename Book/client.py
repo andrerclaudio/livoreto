@@ -1,6 +1,5 @@
 # Build-in modules
 import collections
-import configparser
 import os
 import webbrowser
 
@@ -23,14 +22,17 @@ class GoodReadsInitializer(object):
     """
 
     def __init__(self, settings):
-        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            key = os.environ['GOOD_READS_KEY']
-            secret = os.environ['GOOD_READS_SECRET']
-        else:
-            config = configparser.ConfigParser()
-            config.read_file(open('config.ini'))
-            key = config['GOOD_READS_KEY']['key']
-            secret = config['GOOD_READS_SECRET']['secret']
+        key = os.environ['GOOD_READS_KEY']
+        secret = os.environ['GOOD_READS_SECRET']
+
+        # if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
+        #     key = os.environ['GOOD_READS_KEY']
+        #     secret = os.environ['GOOD_READS_SECRET']
+        # else:
+        #     config = configparser.ConfigParser()
+        #     config.read_file(open('config.ini'))
+        #     key = config['GOOD_READS_KEY']['key']
+        #     secret = config['GOOD_READS_SECRET']['secret']
 
         self.good_reads_key = key
         self.good_reads_secret = secret

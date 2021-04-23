@@ -1,5 +1,4 @@
 # Build-in modules
-import configparser
 import logging
 import os
 
@@ -20,12 +19,14 @@ class MongoDBConnection(object):
         # Connection indexes to database file
         self.client = None
 
-        if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
-            key = os.environ['MONGODB']
-        else:
-            config = configparser.ConfigParser()
-            config.read_file(open('config.ini'))
-            key = config['MONGODB']['url']
+        key = os.environ['MONGODB']
+
+        # if settings.WORK_MODE == 'dev&cloud' or settings.WORK_MODE == 'prod&cloud':
+        #     key = os.environ['MONGODB']
+        # else:
+        #     config = configparser.ConfigParser()
+        #     config.read_file(open('config.ini'))
+        #     key = config['MONGODB']['url']
 
         self.connection_url = key
 
