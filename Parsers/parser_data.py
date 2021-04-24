@@ -21,12 +21,16 @@ MSG_INDEX = 1
 INFO_INDEX = 2
 
 NUMBER_OF_BOOKS_TO_SHOW_USERS_READING = 8
+NUMBER_OF_AUTHORS_TO_SHOW = 8
 
 MONTH_NAMES_PT_BR = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
                      'Outubro', 'Novembro', 'Dezembro']
 
 READING_OPTIONS_LEAVE_CURRENT_READING = 'Abandonar a leitura'
 READING_OPTIONS_FINISH_CURRENT_READING = 'Leitura finalizada'
+
+COMMUNITY_OTHERS_USERS_READING = '- O que os outros usuários estão lendo.'
+COMMUNITY_POPULAR_AUTHORS = '- Autores mais populares.'
 
 
 def data_callback_parser(query, updater, database, good_reads):
@@ -56,7 +60,6 @@ def data_callback_parser(query, updater, database, good_reads):
             if book_info['Qtd. de Páginas'] == 0:
                 book_info['Qtd. de Páginas'] = '-'
 
-            book_info['Qtd. de Páginas'] = book_info['Qtd. de Páginas'] + '\n'
             msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
             # Show book information
             send_message_object(chat_id, updater, ''.join(msg))
@@ -154,7 +157,7 @@ def data_callback_parser(query, updater, database, good_reads):
                     database.drop_document('tREADING', doc_id)
                     break
 
-    elif data == callback_data_list.OTHERS_USERS_READING:
+    elif data == callback_data_list.COMMUNITY:
 
         # Close current database
         database.disconnect(server_close=False)
@@ -163,36 +166,68 @@ def data_callback_parser(query, updater, database, good_reads):
         db_list.remove('admin')
         db_list.remove('local')
 
-        all_users_reading = []
+        if msg == COMMUNITY_OTHERS_USERS_READING:
+            all_users_reading = []
+            for db in db_list:
+                # Exclude the person who is logged
+                if db != chat_id:
+                    # Connect to Database
+                    database.connect(db)
+                    df = database.get('tREADING')
+                    if df is not None:
+                        if len(df) > 0:
+                            for book in df:
+                                book_info = isbn_lookup(book['ISBN'], good_reads)
+                                # Check for a valid information
+                                if len(book_info) > 0:
+                                    all_users_reading.append(book_info['Link'])
 
-        for db in db_list:
-            # Exclude the person who is logged
-            if db != chat_id:
+                    # Close current database
+                    database.disconnect(server_close=False)
+
+            if len(all_users_reading) > 0:
+                # To avoid flooding the current users screen
+                if len(all_users_reading) > NUMBER_OF_BOOKS_TO_SHOW_USERS_READING:
+                    index_to_keep = []
+                    total = len(all_users_reading)
+                    for i in range(0, NUMBER_OF_BOOKS_TO_SHOW_USERS_READING):
+                        index_to_keep.append(random.randint(0, total))
+
+                    data = [i for j, i in enumerate(all_users_reading) if j in index_to_keep]
+                    [send_message_object(chat_id, updater, link) for link in data]
+                else:
+                    [send_message_object(chat_id, updater, link) for link in all_users_reading]
+            else:
+                send_message_object(chat_id, updater, 'Não temos nenhuma leitura ativa em nossa comunidade. '
+                                                      'Que pena! 😒')
+
+        if msg == COMMUNITY_POPULAR_AUTHORS:
+            authors = []
+            for db in db_list:
                 # Connect to Database
                 database.connect(db)
-                df = database.get('tREADING')
-                if df is not None:
-                    if len(df) > 0:
-                        for book in df:
-                            book_info = isbn_lookup(book['ISBN'], good_reads)
-                            # Check for a valid information
-                            if len(book_info) > 0:
-                                all_users_reading.append(book_info['Link'])
+
+                reading = database.get('tREADING')
+                if reading is not None:
+                    if len(reading) > 0:
+                        for name in reading:
+                            authors.append(name['AUTHOR'])
+
+                history = database.get('tHISTORY')
+                if history is not None:
+                    [authors.append(name['AUTHOR']) for name in history]
 
                 # Close current database
                 database.disconnect(server_close=False)
 
-        if len(all_users_reading) > 0:
-            # To avoid flooding the current users screen
-            if len(all_users_reading) > NUMBER_OF_BOOKS_TO_SHOW_USERS_READING:
-                index_to_keep = []
-                total = len(all_users_reading)
-                for i in range(0, NUMBER_OF_BOOKS_TO_SHOW_USERS_READING):
-                    index_to_keep.append(random.randint(0, total))
-
-                data = [i for j, i in enumerate(all_users_reading) if j in index_to_keep]
-                [send_message_object(chat_id, updater, link) for link in data]
-            else:
-                [send_message_object(chat_id, updater, link) for link in all_users_reading]
-        else:
-            send_message_object(chat_id, updater, 'Não temos nenhuma leitura ativa em nossa comunidade. Que pena! 😒')
+            values = Counter(authors)
+            authors = sorted(values.items(), key=lambda x: x[1], reverse=True)
+            df = pd.DataFrame(authors)
+            top_author = df.head(NUMBER_OF_AUTHORS_TO_SHOW)
+            for name in top_author[0]:
+                try:
+                    details = good_reads.find_author(author_name=name)
+                    if details is not None:
+                        send_message_object(chat_id, updater, details.link)
+                except Exception as e:
+                    logger.exception('{}'.format(e), exc_info=False)

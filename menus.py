@@ -22,7 +22,7 @@ class CallBackDataList(object):
         self.READING = 'current books'
         self.HISTORY_YEARS = 'years list'
         self.READING_OPTIONS = 'reading options'
-        self.OTHERS_USERS_READING = 'others users reading'
+        self.COMMUNITY = 'others users reading'
 
 
 def mount_inline_keyboard(fields, data):
@@ -58,7 +58,7 @@ def mount_inline_keyboard(fields, data):
                                                                       str(option[ISBN_INDEX]) +
                                                                       callback_data_list.CHAR_SEPARATOR +
                                                                       option[READING_OPTION_INDEX])))
-    elif data == callback_data_list.OTHERS_USERS_READING:
+    elif data == callback_data_list.COMMUNITY:
         for msg in fields:
             sub.append(InlineKeyboardButton(msg,
                                             callback_data='{}'.format(data + callback_data_list.CHAR_SEPARATOR +

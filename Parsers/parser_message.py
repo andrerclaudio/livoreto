@@ -4,6 +4,7 @@ from datetime import datetime
 
 # Project modules
 from Parsers.new_book import isbn_lookup, save_book
+from Parsers.parser_data import COMMUNITY_OTHERS_USERS_READING, COMMUNITY_POPULAR_AUTHORS
 from delivery import send_picture, send_message
 from menus import mount_inline_keyboard, CallBackDataList, add_keyboard, MAIN_MENU_KEYBOARD
 
@@ -67,8 +68,8 @@ def messages_parser(update, database, good_reads):
             send_message('Eu ainda não tenho números para te mostrar! 🙄', update)
     # --------------------------------------------------------------------------------------------------------------
     elif msg in button_community:
-        msg = ['O que os outros usuários estão lendo.']
-        data = callback_data_list.OTHERS_USERS_READING
+        msg = [COMMUNITY_OTHERS_USERS_READING, COMMUNITY_POPULAR_AUTHORS]
+        data = callback_data_list.COMMUNITY
         keyboard = mount_inline_keyboard(msg, data)
         send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
     # --------------------------------------------------------------------------------------------------------------
