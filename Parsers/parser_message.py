@@ -67,7 +67,7 @@ def messages_parser(update, database, good_reads):
             send_message('Eu ainda não tenho números para te mostrar! 🙄', update)
     # --------------------------------------------------------------------------------------------------------------
     elif msg in button_community:
-        msg = ['O que os usuários estão lendo.']
+        msg = ['O que os outros usuários estão lendo.']
         data = callback_data_list.OTHERS_USERS_READING
         keyboard = mount_inline_keyboard(msg, data)
         send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
