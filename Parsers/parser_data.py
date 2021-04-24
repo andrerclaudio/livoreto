@@ -145,7 +145,7 @@ def data_callback_parser(query, updater, database, good_reads):
                           }
 
                     database.save_data('tDROPPED', df)
-                    msg = 'Você abandonou o livro! 😪😔'
+                    msg = 'Você abandonou o livro! 🙄'
                     send_message_object(chat_id, updater, msg)
                     database.drop_document('tREADING', doc_id)
                     break
