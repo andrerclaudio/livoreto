@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton, KeyboardButton, ReplyKeyboardRemove, 
 # Project modules
 from delivery import send_message as send
 
-MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖'), KeyboardButton('Comunidade')],
+MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖'), KeyboardButton('Comunidade Livoreto')],
                       [KeyboardButton('📚 Adicionar um novo livro'),
                        KeyboardButton('📋 Números')]]
 
