@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton, KeyboardButton, ReplyKeyboardRemove, 
 # Project modules
 from delivery import send_message as send
 
-MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖')],
+MAIN_MENU_KEYBOARD = [[KeyboardButton('📖 Leituras em andamento 📖'), KeyboardButton('Comunidade Livoreto')],
                       [KeyboardButton('📚 Adicionar um novo livro'),
                        KeyboardButton('📋 Números')]]
 
@@ -22,6 +22,7 @@ class CallBackDataList(object):
         self.READING = 'current books'
         self.HISTORY_YEARS = 'years list'
         self.READING_OPTIONS = 'reading options'
+        self.OTHERS_USERS_READING = 'others users reading'
 
 
 def mount_inline_keyboard(fields, data):
@@ -57,6 +58,14 @@ def mount_inline_keyboard(fields, data):
                                                                       str(option[ISBN_INDEX]) +
                                                                       callback_data_list.CHAR_SEPARATOR +
                                                                       option[READING_OPTION_INDEX])))
+    elif data == callback_data_list.OTHERS_USERS_READING:
+        for msg in fields:
+            sub.append(InlineKeyboardButton(msg,
+                                            callback_data='{}'.format(data + callback_data_list.CHAR_SEPARATOR +
+                                                                      msg)))
+            keyboard.append(sub.copy())
+            sub.clear()
+
     keyboard.append(sub)
     return InlineKeyboardMarkup(keyboard)
 

@@ -1,10 +1,10 @@
 # Build-in modules
 import logging
+import random
 import time
 from collections import Counter
 from datetime import datetime
 
-# Added modules
 import pandas as pd
 
 # Project modules
@@ -12,11 +12,15 @@ from Parsers.new_book import isbn_lookup
 from delivery import send_message_object
 from menus import mount_inline_keyboard, CallBackDataList
 
+# Added modules
+
 logger = logging.getLogger(__name__)
 
 DATA_INDEX = 0
 MSG_INDEX = 1
 INFO_INDEX = 2
+
+NUMBER_OF_BOOKS_TO_SHOW_USERS_READING = 8
 
 MONTH_NAMES_PT_BR = ['', 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro',
                      'Outubro', 'Novembro', 'Dezembro']
@@ -149,3 +153,46 @@ def data_callback_parser(query, updater, database, good_reads):
                     send_message_object(chat_id, updater, msg)
                     database.drop_document('tREADING', doc_id)
                     break
+
+    elif data == callback_data_list.OTHERS_USERS_READING:
+
+        # Close current database
+        database.disconnect(server_close=False)
+
+        db_list = database.client.list_database_names()
+        db_list.remove('admin')
+        db_list.remove('local')
+
+        all_users_reading = []
+
+        for db in db_list:
+            # Exclude the person who is logged
+            if db != chat_id:
+                # Connect to Database
+                database.connect(db)
+                df = database.get('tREADING')
+                if df is not None:
+                    if len(df) > 0:
+                        for book in df:
+                            book_info = isbn_lookup(book['ISBN'], good_reads)
+                            # Check for a valid information
+                            if len(book_info) > 0:
+                                all_users_reading.append(book_info['Link'])
+
+                # Close current database
+                database.disconnect(server_close=False)
+
+        if len(all_users_reading) > 0:
+            # To avoid flooding the current users screen
+            if len(all_users_reading) > NUMBER_OF_BOOKS_TO_SHOW_USERS_READING:
+                index_to_keep = []
+                total = len(all_users_reading)
+                for i in range(0, NUMBER_OF_BOOKS_TO_SHOW_USERS_READING):
+                    index_to_keep.append(random.randint(0, total))
+
+                data = [i for j, i in enumerate(all_users_reading) if j in index_to_keep]
+                [send_message_object(chat_id, updater, link) for link in data]
+            else:
+                [send_message_object(chat_id, updater, link) for link in all_users_reading]
+        else:
+            send_message_object(chat_id, updater, 'Não temos nenhuma leitura ativa em nossa comunidade. Que pena! 😒')

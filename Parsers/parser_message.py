@@ -22,6 +22,7 @@ def messages_parser(update, database, good_reads):
     button_new_book = ['📚 Adicionar um novo livro']
     button_reading = ['📖 Leituras em andamento 📖']
     button_numbers = ['📋 Números']
+    button_community = ['Comunidade Livoreto']
 
     msg = update.message.text
 
@@ -64,6 +65,12 @@ def messages_parser(update, database, good_reads):
             send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
         else:
             send_message('Eu ainda não tenho números para te mostrar! 🙄', update)
+    # --------------------------------------------------------------------------------------------------------------
+    elif msg in button_community:
+        msg = ['O que os usuários estão lendo.']
+        data = callback_data_list.OTHERS_USERS_READING
+        keyboard = mount_inline_keyboard(msg, data)
+        send_message('<i><b>Escolha uma das opções abaixo ...</b></i>', update, keyboard)
     # --------------------------------------------------------------------------------------------------------------
     else:
         # ISBN related functions
