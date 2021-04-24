@@ -87,8 +87,5 @@ def book_descriptor(update, book_info):
     """
     Show book info before adding it.
     """
-    if book_info['Qtd. de Páginas'] == 0:
-        book_info['Qtd. de Páginas'] = '-'
-
     msg = ['<i><b>{}</b></i>: {}\n'.format(value, key) for value, key in book_info.items()]
     send_message(''.join(msg), update)
