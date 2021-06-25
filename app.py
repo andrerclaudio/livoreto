@@ -61,9 +61,12 @@ class InitializeTelegram(object):
         dispatcher = self.updater.dispatcher
 
         # Creating handlers
-        start_handler = CommandHandler('start', lambda update, context: start(update))
-        data_handler = CallbackQueryHandler(lambda update, context: telegram_data(update, self.updater, good_reads))
-        msg_handler = MessageHandler(Filters.text, lambda update, context: telegram_message(update, good_reads))
+        start_handler = CommandHandler(
+            'start', lambda update, context: start(update))
+        data_handler = CallbackQueryHandler(
+            lambda update, context: telegram_data(update, self.updater, good_reads))
+        msg_handler = MessageHandler(
+            Filters.text, lambda update, context: telegram_message(update, good_reads))
 
         # Message handler must be the last one
         dispatcher.add_handler(start_handler)
@@ -78,7 +81,8 @@ class InitializeTelegram(object):
             self.updater.start_webhook(listen="0.0.0.0",
                                        port=self.port,
                                        url_path=telegram_token,
-                                       webhook_url="https://livoreto.herokuapp.com/{}".format(telegram_token),
+                                       webhook_url="https://livoreto.herokuapp.com/{}".format(
+                                           telegram_token),
                                        drop_pending_updates=True,
                                        )
         else:
